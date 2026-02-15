@@ -1,0 +1,2236 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luxae Token - ERC777</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            padding: 30px 0;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #2c3e50;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            font-size: 1em;
+            color: #7f8c8d;
+            font-weight: 400;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid #e0e0e0;
+        }
+
+        .wallet-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .wallet-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .wallet-address {
+            font-family: 'Courier New', monospace;
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            border: 1px solid #dee2e6;
+            color: #495057;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: #2c3e50;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #34495e;
+            box-shadow: 0 2px 6px rgba(44, 62, 80, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+            box-shadow: 0 2px 6px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .token-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .info-item {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+
+        .info-item h3 {
+            color: #495057;
+            margin-bottom: 10px;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .info-item .value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.9em;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 0.95em;
+            transition: border-color 0.2s;
+            background: white;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #2c3e50;
+            box-shadow: 0 0 0 2px rgba(44, 62, 80, 0.1);
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .action-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+        }
+
+        .action-card h3 {
+            margin-bottom: 20px;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #dee2e6;
+            margin-bottom: 20px;
+            background: white;
+            border-radius: 8px 8px 0 0;
+            padding: 0 20px;
+        }
+
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-size: 1em;
+            font-weight: 600;
+            color: #6c757d;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            position: relative;
+            top: 2px;
+        }
+
+        .tab:hover {
+            color: #2c3e50;
+            background: #f8f9fa;
+        }
+
+        .tab.active {
+            color: #2c3e50;
+            border-bottom-color: #2c3e50;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .readme-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid #e0e0e0;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .readme-content h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .readme-content h2 {
+            color: #2c3e50;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 5px;
+        }
+
+        .readme-content h3 {
+            color: #495057;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .readme-content code {
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #e83e8c;
+        }
+
+        .readme-content pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border-left: 3px solid #2c3e50;
+        }
+
+        .readme-content pre code {
+            background: transparent;
+            padding: 0;
+            color: #333;
+        }
+
+        .readme-content ul, .readme-content ol {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .readme-content li {
+            margin-bottom: 8px;
+        }
+
+        .readme-content blockquote {
+            border-left: 4px solid #2c3e50;
+            padding-left: 15px;
+            margin-left: 0;
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        .readme-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .readme-content table th,
+        .readme-content table td {
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .readme-content table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .readme-content a {
+            color: #2c3e50;
+            text-decoration: none;
+            border-bottom: 1px solid #2c3e50;
+        }
+
+        .readme-content a:hover {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .readme-content strong {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .readme-content p {
+            margin-bottom: 15px;
+        }
+
+        .readme-content ul, .readme-content ol {
+            margin-bottom: 15px;
+        }
+
+        /* Cupones Styles */
+        .coupon-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .coupon-item.pending {
+            border-left: 4px solid #ffc107;
+        }
+
+        .coupon-item.redeemed {
+            border-left: 4px solid #28a745;
+        }
+
+        .coupon-item.cancelled {
+            border-left: 4px solid #dc3545;
+        }
+
+        .coupon-info {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .coupon-code {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .coupon-details {
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .coupon-value {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .coupon-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .coupon-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .coupon-status.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .coupon-status.redeemed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .coupon-status.cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .redeem-form {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            margin-top: 10px;
+        }
+
+        .redeem-form input {
+            flex: 1;
+            min-width: 200px;
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .redeem-form input:focus {
+            outline: none;
+            border-color: #2c3e50;
+            box-shadow: 0 0 0 2px rgba(44, 62, 80, 0.1);
+        }
+
+        .network-status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .network-item {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 3px solid #2c3e50;
+        }
+
+        .network-item h4 {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .network-item .value {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+            word-break: break-all;
+        }
+        
+        .network-item .value.usd-price {
+            font-size: 0.85em;
+            font-weight: 500;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .network-item .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-indicator.connected {
+            background: #28a745;
+            box-shadow: 0 0 5px #28a745;
+        }
+
+        .status-indicator.disconnected {
+            background: #dc3545;
+            box-shadow: 0 0 5px #dc3545;
+        }
+
+        .status-indicator.syncing {
+            background: #ffc107;
+            box-shadow: 0 0 5px #ffc107;
+        }
+
+        .refresh-btn {
+            padding: 8px 15px;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .wallet-section {
+                flex-direction: column;
+            }
+            
+            .actions-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Luxae Token</h1>
+            <p>ERC777 Token - Blockchain Ethereum Compatible</p>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab(event, 'dashboard')">📊 Dashboard</button>
+            <button class="tab" onclick="switchTab(event, 'coupons')">🎫 Cupones</button>
+            <button class="tab" onclick="switchTab(event, 'readme')">📖 Documentación</button>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard-tab" class="tab-content active">
+
+        <div class="card">
+            <div class="wallet-section">
+                <div class="wallet-info">
+                    <span id="walletStatus">No conectado</span>
+                    <span id="walletAddress" class="wallet-address hidden"></span>
+                </div>
+                <button id="connectBtn" class="btn btn-primary">Conectar Wallet</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-bottom: 15px; color: #667eea;">🌐 Estado de la Red y Nodo</h3>
+            <div class="network-status">
+                <div class="network-item">
+                    <h4>Estado de Conexión</h4>
+                    <div class="value">
+                        <span id="connectionStatus" class="status-indicator disconnected"></span>
+                        <span id="connectionText">Desconectado</span>
+                    </div>
+                </div>
+                <div class="network-item">
+                    <h4>ID de Red (Chain ID)</h4>
+                    <div class="value" id="chainId">-</div>
+                </div>
+                <div class="network-item">
+                    <h4>Nombre de Red</h4>
+                    <div class="value" id="networkName">-</div>
+                </div>
+                <div class="network-item">
+                    <h4>Bloque Actual</h4>
+                    <div class="value" id="currentBlock">-</div>
+                </div>
+                <div class="network-item">
+                    <h4>Gas Price</h4>
+                    <div class="value" id="gasPrice">-</div>
+                    <div class="value" id="gasPriceUSD" style="font-size: 0.9em; color: #495057; margin-top: 8px; line-height: 1.4;">-</div>
+                </div>
+                <div class="network-item">
+                    <h4>Última Actualización</h4>
+                    <div class="value" id="lastUpdate">-</div>
+                </div>
+            </div>
+            <button id="refreshNetworkBtn" class="btn btn-secondary refresh-btn">🔄 Actualizar Estado</button>
+        </div>
+
+        <div class="card">
+            <div class="token-info">
+                <div class="info-item">
+                    <h3>Balance</h3>
+                    <div class="value" id="balance">0 LUXAE</div>
+                </div>
+                <div class="info-item">
+                    <h3>Total Supply</h3>
+                    <div class="value" id="totalSupply">-</div>
+                </div>
+                <div class="info-item">
+                    <h3>Nombre</h3>
+                    <div class="value" id="tokenName">Luxae</div>
+                </div>
+                <div class="info-item">
+                    <h3>Símbolo</h3>
+                    <div class="value" id="tokenSymbol">LUXAE</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="actions-grid">
+                <div class="action-card">
+                    <h3>💸 Transferir Tokens</h3>
+                    <div class="form-group">
+                        <label>Dirección Destino:</label>
+                        <input type="text" id="transferTo" placeholder="0x...">
+                    </div>
+                    <div class="form-group">
+                        <label>Cantidad:</label>
+                        <input type="number" id="transferAmount" placeholder="0.0" step="0.000000000000000001">
+                    </div>
+                    <button id="transferBtn" class="btn btn-primary" disabled>Transferir</button>
+                    <div id="transferStatus" class="status"></div>
+                </div>
+
+                <div class="action-card">
+                    <h3>🔥 Quemar Tokens</h3>
+                    <div class="form-group">
+                        <label>Cantidad a Quemar:</label>
+                        <input type="number" id="burnAmount" placeholder="0.0" step="0.000000000000000001">
+                    </div>
+                    <button id="burnBtn" class="btn btn-danger" disabled>Quemar</button>
+                    <div id="burnStatus" class="status"></div>
+                </div>
+
+                <div class="action-card" id="mintSection" style="display: none;">
+                    <h3>✨ Crear Tokens (Owner)</h3>
+                    <div class="form-group">
+                        <label>Dirección Destino:</label>
+                        <input type="text" id="mintTo" placeholder="0x...">
+                    </div>
+                    <div class="form-group">
+                        <label>Cantidad:</label>
+                        <input type="number" id="mintAmount" placeholder="0.0" step="0.000000000000000001">
+                    </div>
+                    <button id="mintBtn" class="btn btn-success" disabled>Crear</button>
+                    <div id="mintStatus" class="status"></div>
+                </div>
+
+                <div class="action-card">
+                    <h3>👥 Operadores</h3>
+                    <div class="form-group">
+                        <label>Dirección del Operador:</label>
+                        <input type="text" id="operatorAddress" placeholder="0x...">
+                    </div>
+                    <button id="authorizeOperatorBtn" class="btn btn-primary" disabled>Autorizar</button>
+                    <button id="revokeOperatorBtn" class="btn btn-secondary" disabled>Revocar</button>
+                    <div id="operatorStatus" class="status"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Configuración del Contrato</h3>
+            <div id="autoConfigInfo" class="status info" style="display: none; margin-bottom: 15px;">
+                ⚡ Configuración detectada automáticamente desde contract-config.json
+            </div>
+            <div class="form-group">
+                <label>Dirección del Contrato LuxaeToken:</label>
+                <input type="text" id="contractAddress" placeholder="0x...">
+                <small style="color: #666; display: block; margin-top: 5px;">
+                    💡 Se carga automáticamente si ejecutaste <code>npm run deploy:local</code>
+                </small>
+            </div>
+            <div class="form-group">
+                <label>RPC URL (opcional, para red local):</label>
+                <input type="text" id="rpcUrl" placeholder="http://127.0.0.1:8545">
+                <small style="color: #666; display: block; margin-top: 5px;">
+                    💡 Se configura automáticamente para localhost. Ingresa la URL RPC y haz clic en "Conectar a Red" para ver el estado del nodo
+                </small>
+            </div>
+            <button id="connectRpcBtn" class="btn btn-secondary" style="margin-right: 10px;">🔌 Conectar a Red</button>
+            <button id="loadContractBtn" class="btn btn-primary">Cargar Contrato</button>
+            <div id="configStatus" class="status"></div>
+        </div>
+        </div>
+
+        <!-- Cupones Tab -->
+        <div id="coupons-tab" class="tab-content">
+            <div class="card">
+                <h3>🎫 Gestión de Cupones</h3>
+                <p style="color: #6c757d; margin-bottom: 20px;">
+                    Crea cupones con valores estrictos y transfiere tokens automáticamente al canjearlos.
+                </p>
+
+                <!-- Crear Cupones -->
+                <div class="action-card" style="margin-bottom: 30px;">
+                    <h3>Crear Nuevos Cupones</h3>
+                    <div class="form-group">
+                        <label>Número de Cupones (1-10000):</label>
+                        <input type="number" id="couponCount" min="1" max="10000" placeholder="10" value="10">
+                    </div>
+                    <div class="form-group">
+                        <label>Valor por Cupón (tokens):</label>
+                        <input type="number" id="couponValue" step="0.000001" min="0.000001" placeholder="100.5" value="100">
+                    </div>
+                    <div class="form-group">
+                        <label>Dirección Destinatario (opcional):</label>
+                        <input type="text" id="couponRecipient" placeholder="0x...">
+                    </div>
+                    <div class="form-group">
+                        <label>Descripción (opcional):</label>
+                        <input type="text" id="couponDescription" placeholder="Cupones promocionales" maxlength="500">
+                    </div>
+                    <button id="createCouponsBtn" class="btn btn-primary">Crear Cupones</button>
+                    <div id="createCouponsStatus" class="status"></div>
+                </div>
+
+                <!-- Estadísticas -->
+                <div class="card" style="margin-bottom: 30px;">
+                    <h3>📊 Estadísticas</h3>
+                    <div class="token-info" id="couponStats">
+                        <div class="info-item">
+                            <h3>Total Cupones</h3>
+                            <div class="value" id="statTotal">0</div>
+                        </div>
+                        <div class="info-item">
+                            <h3>Pendientes</h3>
+                            <div class="value" id="statPending">0</div>
+                        </div>
+                        <div class="info-item">
+                            <h3>Canjeados</h3>
+                            <div class="value" id="statRedeemed">0</div>
+                        </div>
+                        <div class="info-item">
+                            <h3>Valor Total</h3>
+                            <div class="value" id="statTotalValue">0 LUXAE</div>
+                        </div>
+                    </div>
+                    <button id="refreshStatsBtn" class="btn btn-secondary" style="margin-top: 15px;">🔄 Actualizar Estadísticas</button>
+                </div>
+
+                <!-- Lista de Cupones -->
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3>Lista de Cupones</h3>
+                        <div>
+                            <select id="couponFilter" class="btn btn-secondary" style="padding: 8px 15px; margin-right: 10px;">
+                                <option value="all">Todos</option>
+                                <option value="pending">Pendientes</option>
+                                <option value="redeemed">Canjeados</option>
+                                <option value="cancelled">Cancelados</option>
+                            </select>
+                            <button id="refreshCouponsBtn" class="btn btn-secondary">🔄 Actualizar</button>
+                        </div>
+                    </div>
+                    <div id="couponsList" style="min-height: 200px;">
+                        <p style="text-align: center; color: #6c757d; padding: 40px;">
+                            <span id="couponsLoadingStatus">Cargando cupones...</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- README Tab -->
+        <div id="readme-tab" class="tab-content">
+            <div class="readme-content" id="readmeContent">
+                <!-- El contenido se cargará dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <script src="ethers.min.js"></script>
+    <script>
+        // Esperar a que ethers se cargue antes de ejecutar el código
+        (function() {
+            function checkEthers() {
+                if (typeof ethers !== 'undefined') {
+                    console.log('✓ ethers.js cargado correctamente');
+                    initApp();
+                } else {
+                    console.log('Esperando a que ethers.js se cargue...');
+                    setTimeout(checkEthers, 100);
+                }
+            }
+            
+            // Iniciar verificación cuando el DOM esté listo
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', checkEthers);
+            } else {
+                checkEthers();
+            }
+        })();
+        
+        // Configuración de la API
+        const API_URL = 'http://localhost:3001/api';
+
+        // Variables globales para elementos de cupones
+        let couponFilter, couponsList, refreshCouponsBtn, refreshStatsBtn;
+
+        // Función para cambiar de pestaña
+        function switchTab(event, tabName) {
+            // Ocultar todas las pestañas
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Mostrar la pestaña seleccionada
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.classList.add('active');
+
+            // Cargar contenido según la pestaña
+            if (tabName === 'readme') {
+                // Siempre recargar el README cuando se cambia a la pestaña
+                loadREADME();
+            } else if (tabName === 'coupons') {
+                // Inicializar elementos si no están inicializados
+                if (!couponsList) {
+                    couponsList = document.getElementById('couponsList');
+                    couponFilter = document.getElementById('couponFilter');
+                    refreshCouponsBtn = document.getElementById('refreshCouponsBtn');
+                    refreshStatsBtn = document.getElementById('refreshStatsBtn');
+                }
+                if (typeof window.loadCoupons === 'function') {
+                    window.loadCoupons();
+                }
+                if (typeof window.loadCouponStats === 'function') {
+                    window.loadCouponStats();
+                }
+            }
+        }
+
+        // Función para cargar el README
+        async function loadREADME() {
+            const readmeContent = document.getElementById('readmeContent');
+            
+            // Mostrar indicador de carga
+            readmeContent.innerHTML = '<div style="text-align: center; padding: 40px;"><p>Cargando documentación...</p></div>';
+            
+            try {
+                const response = await fetch('README.md');
+                if (response.ok) {
+                    const markdown = await response.text();
+                    // Convertir markdown a HTML
+                    const html = convertMarkdownToHTML(markdown);
+                    readmeContent.innerHTML = html;
+                    console.log('✓ Documentación cargada correctamente');
+                } else {
+                    console.error('Error: README.md no encontrado (status:', response.status, ')');
+                    readmeContent.innerHTML = '<div style="text-align: center; padding: 40px; color: #856404;"><h3>⚠️ Documentación no encontrada</h3><p>El archivo README.md no está disponible.</p></div>';
+                }
+            } catch (error) {
+                console.error('Error cargando README:', error);
+                readmeContent.innerHTML = '<div style="text-align: center; padding: 40px; color: #856404;"><h3>⚠️ Error cargando documentación</h3><p>' + error.message + '</p><p>Verifica que el servidor esté ejecutándose correctamente.</p></div>';
+            }
+        }
+
+        // Función para convertir Markdown a HTML
+        function convertMarkdownToHTML(markdown) {
+            let html = markdown;
+            
+            // Code blocks primero (para evitar conflictos)
+            html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, function(match, lang, code) {
+                return '<pre><code>' + code.trim() + '</code></pre>';
+            });
+            
+            // Headers
+            html = html.replace(/^#### (.*$)/gim, '<h4>$1</h4>');
+            html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+            html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+            html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+            
+            // Bold
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            // Inline code (después de code blocks)
+            html = html.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+            
+            // Links
+            html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+            
+            // Numbered lists
+            html = html.replace(/^\d+\. (.+)$/gim, '<li>$1</li>');
+            
+            // Bullet lists
+            html = html.replace(/^[-*] (.+)$/gim, '<li>$1</li>');
+            
+            // Wrap consecutive list items
+            html = html.replace(/(<li>.*<\/li>\n?)+/g, function(match) {
+                return '<ul>' + match + '</ul>';
+            });
+            
+            // Split into paragraphs (double newlines)
+            const paragraphs = html.split(/\n\n+/);
+            html = paragraphs.map(p => {
+                p = p.trim();
+                if (!p) return '';
+                // Don't wrap if it's already a block element
+                if (p.match(/^<(h[1-6]|ul|ol|pre|div)/)) {
+                    return p;
+                }
+                return '<p>' + p + '</p>';
+            }).join('');
+            
+            // Clean up extra breaks
+            html = html.replace(/\n/g, ' ');
+            html = html.replace(/  +/g, ' ');
+            
+            return html;
+        }
+
+        // Contenido README embebido (fallback)
+        function getEmbeddedREADME() {
+            return `
+                <h1>Luxae Blockchain - ERC777 Token</h1>
+                <p>A P2P blockchain project based on Ethereum featuring the Luxae (LUXAE) ERC777 token for smart contracts.</p>
+                
+                <h2>Overview</h2>
+                <p>Luxae is an ERC777 token implementation that provides advanced features beyond standard ERC20 tokens:</p>
+                <ul>
+                    <li><strong>Operator Management</strong>: Authorize others to send tokens on your behalf</li>
+                    <li><strong>Hooks</strong>: Receive notifications when tokens are sent or received</li>
+                    <li><strong>Backward Compatible</strong>: Works with all ERC20 wallets and exchanges</li>
+                    <li><strong>Enhanced Security</strong>: Built on OpenZeppelin's battle-tested contracts</li>
+                </ul>
+
+                <h2>Features</h2>
+                <ul>
+                    <li>✅ ERC777 token standard implementation</li>
+                    <li>✅ Initial supply: 1 billion tokens (1,000,000,000 LUXAE)</li>
+                    <li>✅ 18 decimal places</li>
+                    <li>✅ Minting capability (owner only)</li>
+                    <li>✅ Burning capability</li>
+                    <li>✅ Operator authorization</li>
+                    <li>✅ Comprehensive test suite</li>
+                </ul>
+
+                <h2>Development</h2>
+                <h3>Compile Contracts</h3>
+                <pre><code>npm run compile</code></pre>
+
+                <h3>Run Tests</h3>
+                <pre><code>npm run test</code></pre>
+
+                <h3>Start Local Hardhat Node</h3>
+                <pre><code>npm run node</code></pre>
+
+                <h3>Start Frontend</h3>
+                <pre><code>npm run frontend</code></pre>
+                <p>Then open <code>http://localhost:3000</code> in your browser.</p>
+
+                <h2>API CRUD para Cupones</h2>
+                <p>Un servidor API REST completo para gestionar cupones con valores estrictos y transferencia automática de tokens.</p>
+
+                <h3>Instalación de la API</h3>
+                <pre><code>cd api
+npm install</code></pre>
+
+                <h3>Configuración</h3>
+                <p>1. Copia el archivo de ejemplo de configuración:</p>
+                <pre><code>cp .env.example .env</code></pre>
+                
+                <p>2. Edita <code>.env</code> con tus valores:</p>
+                <pre><code>CONTRACT_ADDRESS=0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
+RPC_URL=http://127.0.0.1:8545
+PRIVATE_KEY=0x...  # Tu clave privada para firmar transacciones
+PORT=3001</code></pre>
+
+                <p><strong>⚠️ IMPORTANTE</strong>: Nunca compartas tu <code>PRIVATE_KEY</code> en producción. Solo usa en desarrollo.</p>
+
+                <h3>Iniciar la API</h3>
+                <pre><code>npm start
+# o en modo desarrollo
+npm run dev</code></pre>
+                <p>El servidor API estará disponible en <code>http://localhost:3001</code></p>
+
+                <h3>Endpoints Disponibles</h3>
+                <ul>
+                    <li><strong>GET</strong> <code>/api/coupons</code> - Listar todos los cupones</li>
+                    <li><strong>GET</strong> <code>/api/coupons/:id</code> - Obtener un cupón específico</li>
+                    <li><strong>POST</strong> <code>/api/coupons</code> - Crear nuevos cupones</li>
+                    <li><strong>PUT</strong> <code>/api/coupons/:id</code> - Actualizar un cupón</li>
+                    <li><strong>DELETE</strong> <code>/api/coupons/:id</code> - Eliminar un cupón</li>
+                    <li><strong>POST</strong> <code>/api/coupons/:id/redeem</code> - Canjear cupón y transferir tokens</li>
+                    <li><strong>GET</strong> <code>/api/stats</code> - Estadísticas de cupones</li>
+                    <li><strong>GET</strong> <code>/api/health</code> - Estado del servidor</li>
+                </ul>
+
+                <h3>Ejemplo de Uso</h3>
+                <p><strong>Crear 10 cupones de 100 tokens cada uno:</strong></p>
+                <pre><code>curl -X POST http://localhost:3001/api/coupons \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "numberOfCoupons": 10,
+    "valuePerCoupon": 100,
+    "description": "Cupones promocionales"
+  }'</code></pre>
+
+                <p><strong>Canjear un cupón:</strong></p>
+                <pre><code>curl -X POST http://localhost:3001/api/coupons/{coupon-id}/redeem \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "recipientAddress": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
+  }'</code></pre>
+
+                <h3>Validaciones Estrictas</h3>
+                <ul>
+                    <li><strong>Número de cupones</strong>: Entero entre 1 y 10,000</li>
+                    <li><strong>Valor por cupón</strong>: Mayor a 0.000001 (precisión de 18 decimales)</li>
+                    <li><strong>Direcciones</strong>: Deben ser direcciones Ethereum válidas</li>
+                    <li><strong>Estado</strong>: Solo puede ser: <code>pending</code>, <code>redeemed</code>, <code>cancelled</code></li>
+                </ul>
+
+                <h3>Características de la API</h3>
+                <ul>
+                    <li>✅ Transferencia automática de tokens al canjear</li>
+                    <li>✅ Generación de códigos únicos para cada cupón</li>
+                    <li>✅ Base de datos JSON (fácil migrar a SQL)</li>
+                    <li>✅ Validación de balance antes de transferir</li>
+                    <li>✅ Estadísticas en tiempo real</li>
+                </ul>
+
+                <h2>Dependencia de Ethereum</h2>
+                <p><strong>Sí, el token Luxae está completamente basado en la blockchain de Ethereum.</strong></p>
+                <p>Luxae es un token ERC777 que se ejecuta sobre la red Ethereum. No es una blockchain independiente, sino un contrato inteligente que utiliza la infraestructura de Ethereum.</p>
+
+                <h2>Sepolia Testnet</h2>
+                <p><strong>Sepolia es una red de prueba (testnet) de Ethereum</strong> utilizada para desarrollo y testing antes de desplegar en mainnet.</p>
+                <p>Permite probar contratos inteligentes sin usar ETH real. Los tokens y transacciones en Sepolia no tienen valor real.</p>
+            `;
+        }
+
+        function initApp() {
+            let provider, signer, contract, contractAddress, userAddress;
+
+            // ABI del contrato LuxaeToken (simplificado para funciones principales)
+            const contractABI = [
+            "function name() view returns (string)",
+            "function symbol() view returns (string)",
+            "function decimals() view returns (uint8)",
+            "function totalSupply() view returns (uint256)",
+            "function balanceOf(address) view returns (uint256)",
+            "function transfer(address to, uint256 amount) returns (bool)",
+            "function mint(address to, uint256 amount, bytes userData, bytes operatorData)",
+            "function burn(uint256 amount, bytes data)",
+            "function authorizeOperator(address operator)",
+            "function revokeOperator(address operator)",
+            "function isOperatorFor(address operator, address tokenHolder) view returns (bool)",
+            "function owner() view returns (address)",
+            "event Transfer(address indexed from, address indexed to, uint256 value)",
+            "event Minted(address indexed operator, address indexed to, uint256 amount, bytes data, bytes operatorData)",
+            "event Burned(address indexed operator, address indexed from, uint256 amount, bytes data, bytes operatorData)"
+            ];
+
+            // Elementos del DOM
+            const connectBtn = document.getElementById('connectBtn');
+        const walletStatus = document.getElementById('walletStatus');
+        const walletAddress = document.getElementById('walletAddress');
+        const balanceEl = document.getElementById('balance');
+        const totalSupplyEl = document.getElementById('totalSupply');
+        const tokenNameEl = document.getElementById('tokenName');
+        const tokenSymbolEl = document.getElementById('tokenSymbol');
+        
+        // Elementos de estado de red
+        const connectionStatus = document.getElementById('connectionStatus');
+        const connectionText = document.getElementById('connectionText');
+        const chainIdEl = document.getElementById('chainId');
+        const networkNameEl = document.getElementById('networkName');
+        const currentBlockEl = document.getElementById('currentBlock');
+        const gasPriceEl = document.getElementById('gasPrice');
+        const gasPriceUSDEl = document.getElementById('gasPriceUSD');
+        const lastUpdateEl = document.getElementById('lastUpdate');
+        const refreshNetworkBtn = document.getElementById('refreshNetworkBtn');
+        
+        // Variable para almacenar precio de ETH en USD
+        let ethPriceUSD = 0;
+
+        const transferBtn = document.getElementById('transferBtn');
+        const transferTo = document.getElementById('transferTo');
+        const transferAmount = document.getElementById('transferAmount');
+        const transferStatus = document.getElementById('transferStatus');
+
+        const burnBtn = document.getElementById('burnBtn');
+        const burnAmount = document.getElementById('burnAmount');
+        const burnStatus = document.getElementById('burnStatus');
+
+        const mintBtn = document.getElementById('mintBtn');
+        const mintSection = document.getElementById('mintSection');
+        const mintTo = document.getElementById('mintTo');
+        const mintAmount = document.getElementById('mintAmount');
+        const mintStatus = document.getElementById('mintStatus');
+
+        const authorizeOperatorBtn = document.getElementById('authorizeOperatorBtn');
+        const revokeOperatorBtn = document.getElementById('revokeOperatorBtn');
+        const operatorAddress = document.getElementById('operatorAddress');
+        const operatorStatus = document.getElementById('operatorStatus');
+
+        const contractAddressInput = document.getElementById('contractAddress');
+        const rpcUrlInput = document.getElementById('rpcUrl');
+        const connectRpcBtn = document.getElementById('connectRpcBtn');
+        const loadContractBtn = document.getElementById('loadContractBtn');
+        const configStatus = document.getElementById('configStatus');
+        const autoConfigInfo = document.getElementById('autoConfigInfo');
+
+        // Elementos de cupones
+        const createCouponsBtn = document.getElementById('createCouponsBtn');
+        const couponCount = document.getElementById('couponCount');
+        const couponValue = document.getElementById('couponValue');
+        const couponRecipient = document.getElementById('couponRecipient');
+        const couponDescription = document.getElementById('couponDescription');
+        const createCouponsStatus = document.getElementById('createCouponsStatus');
+        
+        // Inicializar variables globales de cupones
+        couponsList = document.getElementById('couponsList');
+        couponFilter = document.getElementById('couponFilter');
+        refreshCouponsBtn = document.getElementById('refreshCouponsBtn');
+        refreshStatsBtn = document.getElementById('refreshStatsBtn');
+
+        // Conectar wallet
+        connectBtn.addEventListener('click', async () => {
+            // Verificar que ethers esté disponible
+            if (typeof ethers === 'undefined') {
+                showStatus(configStatus, 'Error: ethers.js no está cargado. Por favor recarga la página.', 'error');
+                return;
+            }
+            
+            try {
+                if (typeof window.ethereum !== 'undefined') {
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    provider = new ethers.providers.Web3Provider(window.ethereum);
+                    signer = provider.getSigner();
+                    userAddress = await signer.getAddress();
+                    
+                    walletStatus.textContent = 'Conectado';
+                    walletAddress.textContent = `${userAddress.substring(0, 6)}...${userAddress.substring(38)}`;
+                    walletAddress.classList.remove('hidden');
+                    connectBtn.textContent = 'Desconectar';
+                    connectBtn.onclick = disconnectWallet;
+                    
+                    await loadTokenInfo();
+                    enableButtons();
+                    
+                    // Actualizar estado de red
+                    startNetworkUpdates();
+                } else {
+                    showStatus(configStatus, 'Por favor instala MetaMask', 'error');
+                }
+            } catch (error) {
+                showStatus(configStatus, `Error: ${error.message}`, 'error');
+            }
+        });
+
+        function disconnectWallet() {
+            provider = null;
+            signer = null;
+            userAddress = null;
+            walletStatus.textContent = 'No conectado';
+            walletAddress.classList.add('hidden');
+            connectBtn.textContent = 'Conectar Wallet';
+            connectBtn.onclick = () => connectBtn.click();
+            disableButtons();
+            stopNetworkUpdates();
+            updateNetworkStatus();
+        }
+
+        // Conectar a RPC
+        connectRpcBtn.addEventListener('click', async () => {
+            // Verificar que ethers esté disponible
+            if (typeof ethers === 'undefined') {
+                showStatus(configStatus, 'Error: ethers.js no está cargado. Por favor recarga la página.', 'error');
+                return;
+            }
+            
+            const rpcUrl = rpcUrlInput.value.trim();
+
+            if (!rpcUrl) {
+                showStatus(configStatus, 'Por favor ingresa una RPC URL', 'error');
+                return;
+            }
+
+            try {
+                connectRpcBtn.disabled = true;
+                connectRpcBtn.innerHTML = '<span class="loading"></span> Conectando...';
+                
+                provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+                
+                // Verificar conexión
+                await provider.getBlockNumber();
+                
+                showStatus(configStatus, 'Conectado a la red exitosamente', 'success');
+                await updateNetworkStatus();
+                startNetworkUpdates();
+                
+                // Guardar RPC URL
+                localStorage.setItem('luxaeRpcUrl', rpcUrl);
+            } catch (error) {
+                showStatus(configStatus, `Error conectando: ${error.message}`, 'error');
+                provider = null;
+            } finally {
+                connectRpcBtn.disabled = false;
+                connectRpcBtn.textContent = '🔌 Conectar a Red';
+            }
+        });
+
+        // Cargar contrato
+        loadContractBtn.addEventListener('click', async () => {
+            // Verificar que ethers esté disponible
+            if (typeof ethers === 'undefined') {
+                showStatus(configStatus, 'Error: ethers.js no está cargado. Por favor recarga la página.', 'error');
+                return;
+            }
+            
+            contractAddress = contractAddressInput.value.trim();
+            const rpcUrl = rpcUrlInput.value.trim();
+
+            if (!contractAddress) {
+                showStatus(configStatus, 'Por favor ingresa la dirección del contrato', 'error');
+                return;
+            }
+
+            try {
+                if (rpcUrl) {
+                    provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+                } else if (typeof window.ethereum !== 'undefined') {
+                    provider = new ethers.providers.Web3Provider(window.ethereum);
+                } else {
+                    showStatus(configStatus, 'Por favor conecta MetaMask o ingresa una RPC URL', 'error');
+                    return;
+                }
+
+                contract = new ethers.Contract(contractAddress, contractABI, provider);
+                
+                if (signer) {
+                    contract = contract.connect(signer);
+                }
+
+                await loadTokenInfo();
+                showStatus(configStatus, 'Contrato cargado exitosamente', 'success');
+                
+                if (signer) {
+                    await checkIfOwner();
+                }
+                
+                // Actualizar estado de red después de cargar el contrato
+                startNetworkUpdates();
+            } catch (error) {
+                showStatus(configStatus, `Error: ${error.message}`, 'error');
+            }
+        });
+
+        // Cargar información del token
+        async function loadTokenInfo() {
+            if (!contract) return;
+
+            try {
+                const [name, symbol, decimals, totalSupply, balance] = await Promise.all([
+                    contract.name(),
+                    contract.symbol(),
+                    contract.decimals(),
+                    contract.totalSupply(),
+                    userAddress ? contract.balanceOf(userAddress) : ethers.BigNumber.from(0)
+                ]);
+
+                tokenNameEl.textContent = name;
+                tokenSymbolEl.textContent = symbol;
+                totalSupplyEl.textContent = formatTokenAmount(totalSupply, decimals) + ' ' + symbol;
+                
+                if (userAddress) {
+                    balanceEl.textContent = formatTokenAmount(balance, decimals) + ' ' + symbol;
+                }
+            } catch (error) {
+                console.error('Error loading token info:', error);
+            }
+        }
+
+        // Verificar si el usuario es owner
+        async function checkIfOwner() {
+            if (!contract || !signer) return;
+            
+            try {
+                const owner = await contract.owner();
+                if (owner.toLowerCase() === userAddress.toLowerCase()) {
+                    mintSection.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error checking owner:', error);
+            }
+        }
+
+        // Transferir tokens
+        transferBtn.addEventListener('click', async () => {
+            const to = transferTo.value.trim();
+            const amount = transferAmount.value;
+
+            if (!to || !amount) {
+                showStatus(transferStatus, 'Por favor completa todos los campos', 'error');
+                return;
+            }
+
+            try {
+                transferBtn.disabled = true;
+                transferBtn.innerHTML = '<span class="loading"></span> Enviando...';
+                
+                const decimals = await contract.decimals();
+                const amountWei = ethers.utils.parseUnits(amount, decimals);
+                
+                const tx = await contract.transfer(to, amountWei);
+                showStatus(transferStatus, `Transacción enviada: ${tx.hash}`, 'info');
+                
+                await tx.wait();
+                showStatus(transferStatus, 'Transferencia exitosa!', 'success');
+                
+                await loadTokenInfo();
+                transferTo.value = '';
+                transferAmount.value = '';
+            } catch (error) {
+                showStatus(transferStatus, `Error: ${error.message}`, 'error');
+            } finally {
+                transferBtn.disabled = false;
+                transferBtn.textContent = 'Transferir';
+            }
+        });
+
+        // Quemar tokens
+        burnBtn.addEventListener('click', async () => {
+            const amount = burnAmount.value;
+
+            if (!amount) {
+                showStatus(burnStatus, 'Por favor ingresa la cantidad', 'error');
+                return;
+            }
+
+            try {
+                burnBtn.disabled = true;
+                burnBtn.innerHTML = '<span class="loading"></span> Quemando...';
+                
+                const decimals = await contract.decimals();
+                const amountWei = ethers.utils.parseUnits(amount, decimals);
+                
+                const tx = await contract.burn(amountWei, "0x");
+                showStatus(burnStatus, `Transacción enviada: ${tx.hash}`, 'info');
+                
+                await tx.wait();
+                showStatus(burnStatus, 'Tokens quemados exitosamente!', 'success');
+                
+                await loadTokenInfo();
+                burnAmount.value = '';
+            } catch (error) {
+                showStatus(burnStatus, `Error: ${error.message}`, 'error');
+            } finally {
+                burnBtn.disabled = false;
+                burnBtn.textContent = 'Quemar';
+            }
+        });
+
+        // Crear tokens (mint)
+        mintBtn.addEventListener('click', async () => {
+            const to = mintTo.value.trim();
+            const amount = mintAmount.value;
+
+            if (!to || !amount) {
+                showStatus(mintStatus, 'Por favor completa todos los campos', 'error');
+                return;
+            }
+
+            try {
+                mintBtn.disabled = true;
+                mintBtn.innerHTML = '<span class="loading"></span> Creando...';
+                
+                const decimals = await contract.decimals();
+                const amountWei = ethers.utils.parseUnits(amount, decimals);
+                
+                const tx = await contract.mint(to, amountWei, "0x", "0x");
+                showStatus(mintStatus, `Transacción enviada: ${tx.hash}`, 'info');
+                
+                await tx.wait();
+                showStatus(mintStatus, 'Tokens creados exitosamente!', 'success');
+                
+                await loadTokenInfo();
+                mintTo.value = '';
+                mintAmount.value = '';
+            } catch (error) {
+                showStatus(mintStatus, `Error: ${error.message}`, 'error');
+            } finally {
+                mintBtn.disabled = false;
+                mintBtn.textContent = 'Crear';
+            }
+        });
+
+        // Autorizar operador
+        authorizeOperatorBtn.addEventListener('click', async () => {
+            const operator = operatorAddress.value.trim();
+
+            if (!operator) {
+                showStatus(operatorStatus, 'Por favor ingresa la dirección del operador', 'error');
+                return;
+            }
+
+            try {
+                authorizeOperatorBtn.disabled = true;
+                authorizeOperatorBtn.innerHTML = '<span class="loading"></span> Autorizando...';
+                
+                const tx = await contract.authorizeOperator(operator);
+                showStatus(operatorStatus, `Transacción enviada: ${tx.hash}`, 'info');
+                
+                await tx.wait();
+                showStatus(operatorStatus, 'Operador autorizado exitosamente!', 'success');
+                operatorAddress.value = '';
+            } catch (error) {
+                showStatus(operatorStatus, `Error: ${error.message}`, 'error');
+            } finally {
+                authorizeOperatorBtn.disabled = false;
+                authorizeOperatorBtn.textContent = 'Autorizar';
+            }
+        });
+
+        // Revocar operador
+        revokeOperatorBtn.addEventListener('click', async () => {
+            const operator = operatorAddress.value.trim();
+
+            if (!operator) {
+                showStatus(operatorStatus, 'Por favor ingresa la dirección del operador', 'error');
+                return;
+            }
+
+            try {
+                revokeOperatorBtn.disabled = true;
+                revokeOperatorBtn.innerHTML = '<span class="loading"></span> Revocando...';
+                
+                const tx = await contract.revokeOperator(operator);
+                showStatus(operatorStatus, `Transacción enviada: ${tx.hash}`, 'info');
+                
+                await tx.wait();
+                showStatus(operatorStatus, 'Operador revocado exitosamente!', 'success');
+                operatorAddress.value = '';
+            } catch (error) {
+                showStatus(operatorStatus, `Error: ${error.message}`, 'error');
+            } finally {
+                revokeOperatorBtn.disabled = false;
+                revokeOperatorBtn.textContent = 'Revocar';
+            }
+        });
+
+        // Funciones auxiliares
+        function formatTokenAmount(amount, decimals) {
+            return ethers.utils.formatUnits(amount, decimals);
+        }
+
+        function showStatus(element, message, type) {
+            element.textContent = message;
+            element.className = `status ${type}`;
+            setTimeout(() => {
+                element.className = 'status';
+            }, 5000);
+        }
+
+        function enableButtons() {
+            transferBtn.disabled = false;
+            burnBtn.disabled = false;
+            mintBtn.disabled = false;
+            authorizeOperatorBtn.disabled = false;
+            revokeOperatorBtn.disabled = false;
+        }
+
+        function disableButtons() {
+            transferBtn.disabled = true;
+            burnBtn.disabled = true;
+            mintBtn.disabled = true;
+            authorizeOperatorBtn.disabled = true;
+            revokeOperatorBtn.disabled = true;
+        }
+
+        // Función para obtener el nombre de la red
+        function getNetworkName(chainId) {
+            const networks = {
+                1: 'Ethereum Mainnet',
+                3: 'Ropsten',
+                4: 'Rinkeby',
+                5: 'Goerli',
+                11155111: 'Sepolia',
+                1337: 'Hardhat Local',
+                31337: 'Hardhat Local',
+                5777: 'Ganache Local'
+            };
+            return networks[chainId] || `Red ${chainId}`;
+        }
+
+        // Función para obtener precio de ETH en USD
+        async function fetchETHPrice() {
+            try {
+                // Intentar con CoinGecko (gratis, sin API key)
+                const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd');
+                const data = await response.json();
+                if (data && data.ethereum && data.ethereum.usd) {
+                    ethPriceUSD = data.ethereum.usd;
+                    return ethPriceUSD;
+                }
+            } catch (error) {
+                console.log('Error obteniendo precio de ETH desde CoinGecko:', error);
+            }
+            
+            // Fallback: intentar con CoinCap
+            try {
+                const response = await fetch('https://api.coincap.io/v2/assets/ethereum');
+                const data = await response.json();
+                if (data && data.data && data.data.priceUsd) {
+                    ethPriceUSD = parseFloat(data.data.priceUsd);
+                    return ethPriceUSD;
+                }
+            } catch (error) {
+                console.log('Error obteniendo precio de ETH desde CoinCap:', error);
+            }
+            
+            return 0;
+        }
+        
+        // Función para calcular costo de gas en USD
+        function calculateGasCostUSD(gasPriceGwei, gasLimit = 21000) {
+            if (ethPriceUSD === 0 || !gasPriceGwei || isNaN(parseFloat(gasPriceGwei))) {
+                return null;
+            }
+            
+            try {
+                // Convertir gwei a ETH
+                const gasPriceETH = parseFloat(gasPriceGwei) / 1e9;
+                
+                // Calcular costo total en ETH
+                const totalCostETH = gasPriceETH * gasLimit;
+                
+                // Convertir a USD
+                const totalCostUSD = totalCostETH * ethPriceUSD;
+                
+                return {
+                    perTransaction: totalCostUSD,
+                    perGasUnit: (gasPriceETH * ethPriceUSD) * 1e9 // USD por gwei
+                };
+            } catch (error) {
+                console.error('Error calculando costo de gas:', error);
+                return null;
+            }
+        }
+        
+        // Función para formatear precio en USD
+        function formatUSD(amount) {
+            if (amount === null || amount === undefined || isNaN(amount) || amount === 0) {
+                return '$0.00';
+            }
+            // Siempre mostrar con símbolo de dólar y formato consistente
+            if (amount < 0.000001) {
+                return '$' + amount.toFixed(8);
+            } else if (amount < 0.01) {
+                return '$' + amount.toFixed(6);
+            } else if (amount < 1) {
+                return '$' + amount.toFixed(4);
+            } else if (amount < 1000) {
+                return '$' + amount.toFixed(2);
+            } else {
+                return '$' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+        }
+
+        // Función para actualizar el estado de la red
+        async function updateNetworkStatus() {
+            // Verificar que ethers esté disponible
+            if (typeof ethers === 'undefined') {
+                connectionStatus.className = 'status-indicator disconnected';
+                connectionText.textContent = 'ethers.js no cargado';
+                return;
+            }
+            
+            // Obtener precio de ETH si no lo tenemos
+            if (ethPriceUSD === 0) {
+                await fetchETHPrice();
+            }
+            
+            // Intentar obtener provider si no existe
+            if (!provider) {
+                // Intentar conectar a MetaMask primero
+                if (typeof window.ethereum !== 'undefined') {
+                    try {
+                        provider = new ethers.providers.Web3Provider(window.ethereum);
+                        // No establecer signer aquí, solo provider para lectura
+                    } catch (error) {
+                        console.log('MetaMask disponible pero no conectado');
+                    }
+                }
+                
+                // Si hay RPC URL configurado, intentar usarlo
+                const rpcUrl = rpcUrlInput.value.trim();
+                if (!provider && rpcUrl) {
+                    try {
+                        provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+                    } catch (error) {
+                        console.error('Error conectando a RPC:', error);
+                    }
+                }
+            }
+            
+            if (!provider) {
+                connectionStatus.className = 'status-indicator disconnected';
+                connectionText.textContent = 'Desconectado - Configura RPC o conecta MetaMask';
+                chainIdEl.textContent = '-';
+                networkNameEl.textContent = '-';
+                currentBlockEl.textContent = '-';
+                gasPriceEl.textContent = '-';
+                gasPriceUSDEl.textContent = '-';
+                lastUpdateEl.textContent = '-';
+                return;
+            }
+
+            try {
+                // Obtener información de la red
+                const network = await provider.getNetwork();
+                const blockNumber = await provider.getBlockNumber();
+                const gasPrice = await provider.getGasPrice();
+                const block = await provider.getBlock(blockNumber);
+
+                // Actualizar UI
+                connectionStatus.className = 'status-indicator connected';
+                connectionText.textContent = 'Conectado';
+                chainIdEl.textContent = network.chainId.toString();
+                networkNameEl.textContent = getNetworkName(network.chainId);
+                currentBlockEl.textContent = blockNumber.toLocaleString();
+                
+                // Formatear gas price
+                const gasPriceGwei = ethers.utils.formatUnits(gasPrice, 'gwei');
+                gasPriceEl.textContent = gasPriceGwei + ' gwei';
+                
+                // Calcular y mostrar costo en USD
+                if (ethPriceUSD > 0) {
+                    const gasCost = calculateGasCostUSD(gasPriceGwei, 21000); // Transferencia estándar
+                    const contractGasCost = calculateGasCostUSD(gasPriceGwei, 100000); // Contrato complejo
+                    const simpleContractCost = calculateGasCostUSD(gasPriceGwei, 50000); // Contrato simple
+                    
+                    if (gasCost && contractGasCost && simpleContractCost) {
+                        // Mostrar costo por transacción estándar y contratos
+                        gasPriceUSDEl.innerHTML = `
+                            <div style="margin-bottom: 4px; font-weight: 600;">
+                                💸 ${formatUSD(gasCost.perTransaction)} por transferencia
+                            </div>
+                            <div style="margin-bottom: 4px; font-size: 0.9em; color: #495057;">
+                                📄 ${formatUSD(simpleContractCost.perTransaction)} por contrato simple
+                            </div>
+                            <div style="font-size: 0.85em; color: #6c757d;">
+                                ⚙️ ${formatUSD(contractGasCost.perTransaction)} por contrato complejo
+                            </div>
+                        `;
+                        gasPriceUSDEl.style.display = 'block';
+                    } else {
+                        gasPriceUSDEl.textContent = 'Precio USD no disponible';
+                        gasPriceUSDEl.style.display = 'block';
+                    }
+                } else {
+                    gasPriceUSDEl.textContent = 'Obteniendo precio USD...';
+                    gasPriceUSDEl.style.display = 'block';
+                    // Intentar obtener precio de nuevo
+                    setTimeout(async () => {
+                        await fetchETHPrice();
+                        updateNetworkStatus();
+                    }, 2000);
+                }
+                
+                // Formatear fecha de última actualización
+                const now = new Date();
+                lastUpdateEl.textContent = now.toLocaleTimeString();
+            } catch (error) {
+                console.error('Error actualizando estado de red:', error);
+                connectionStatus.className = 'status-indicator disconnected';
+                connectionText.textContent = 'Error de conexión';
+                chainIdEl.textContent = '-';
+                networkNameEl.textContent = '-';
+                currentBlockEl.textContent = '-';
+                gasPriceEl.textContent = '-';
+                gasPriceUSDEl.textContent = '-';
+            }
+        }
+
+        // Botón para actualizar estado de red manualmente
+        refreshNetworkBtn.addEventListener('click', async () => {
+            refreshNetworkBtn.disabled = true;
+            refreshNetworkBtn.innerHTML = '<span class="loading"></span> Actualizando...';
+            await updateNetworkStatus();
+            refreshNetworkBtn.disabled = false;
+            refreshNetworkBtn.textContent = '🔄 Actualizar Estado';
+        });
+
+        // Actualizar estado de red cada 10 segundos
+        let networkUpdateInterval;
+        function startNetworkUpdates() {
+            if (networkUpdateInterval) {
+                clearInterval(networkUpdateInterval);
+            }
+            updateNetworkStatus(); // Actualizar inmediatamente
+            networkUpdateInterval = setInterval(updateNetworkStatus, 10000); // Cada 10 segundos
+        }
+
+        function stopNetworkUpdates() {
+            if (networkUpdateInterval) {
+                clearInterval(networkUpdateInterval);
+            }
+        }
+
+        // Función para cargar configuración del contrato
+        async function loadContractConfig() {
+            try {
+                // Intentar cargar desde archivo de configuración (generado por deploy)
+                const response = await fetch('contract-config.json', {
+                    cache: 'no-cache'
+                });
+                
+                // Si el archivo no existe (404), es normal, usar localStorage
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        // 404 es esperado si no se ha desplegado aún - no hacer nada
+                        autoConfigInfo.style.display = 'none';
+                        return false;
+                    }
+                    // Otro error HTTP
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const config = await response.json();
+                
+                // Verificar que el archivo no esté vacío o solo tenga {}
+                if (!config || !config.contractAddress) {
+                    autoConfigInfo.style.display = 'none';
+                    return false;
+                }
+                console.log('✓ Configuración del contrato cargada desde contract-config.json');
+                
+                // Mostrar indicador de configuración automática
+                autoConfigInfo.style.display = 'block';
+                
+                // Pre-llenar campos con la configuración
+                if (config.contractAddress) {
+                    contractAddressInput.value = config.contractAddress;
+                    localStorage.setItem('luxaeContractAddress', config.contractAddress);
+                }
+                
+                if (config.rpcUrl) {
+                    rpcUrlInput.value = config.rpcUrl;
+                    localStorage.setItem('luxaeRpcUrl', config.rpcUrl);
+                    
+                    // Si hay RPC URL, intentar conectar automáticamente
+                    if (config.rpcUrl && (config.rpcUrl.includes('localhost') || config.rpcUrl.includes('127.0.0.1'))) {
+                        try {
+                            provider = new ethers.providers.JsonRpcProvider(config.rpcUrl);
+                            await updateNetworkStatus();
+                            startNetworkUpdates();
+                            
+                            // Si hay dirección de contrato, cargarlo automáticamente
+                            if (config.contractAddress) {
+                                contractAddress = config.contractAddress;
+                                contract = new ethers.Contract(config.contractAddress, contractABI, provider);
+                                await loadTokenInfo();
+                                showStatus(configStatus, '✓ Contrato y red cargados automáticamente', 'success');
+                            }
+                        } catch (error) {
+                            console.log('No se pudo conectar automáticamente:', error.message);
+                        }
+                    }
+                }
+                
+                return true;
+            } catch (error) {
+                // Error de red u otro error, usar localStorage
+                // El 404 se maneja arriba, aquí solo otros errores
+                if (error.name !== 'TypeError' && !error.message.includes('Failed to fetch')) {
+                    console.log('Error cargando contract-config.json:', error.message);
+                }
+                autoConfigInfo.style.display = 'none';
+                return false;
+            }
+            
+            // Fallback: cargar desde localStorage
+            const savedAddress = localStorage.getItem('luxaeContractAddress');
+            const savedRpc = localStorage.getItem('luxaeRpcUrl');
+            
+            if (savedAddress) {
+                contractAddressInput.value = savedAddress;
+            }
+            if (savedRpc) {
+                rpcUrlInput.value = savedRpc;
+            }
+            
+            return false;
+        }
+
+        // Cargar precio de ETH al inicio
+        window.addEventListener('load', async () => {
+            // Obtener precio de ETH en USD
+            await fetchETHPrice();
+            
+            // Cargar configuración del contrato (desde contract-config.json o localStorage)
+            // El 404 es esperado si no se ha desplegado, se maneja silenciosamente
+            await loadContractConfig().catch(() => {
+                // Ignorar errores silenciosamente - usar localStorage como fallback
+            });
+            
+            // Iniciar actualización de estado de red
+            await updateNetworkStatus();
+            
+            // Si MetaMask está disponible, intentar detectar la red
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                    if (accounts.length > 0 && !provider) {
+                        provider = new ethers.providers.Web3Provider(window.ethereum);
+                        await updateNetworkStatus();
+                        startNetworkUpdates();
+                    }
+                } catch (error) {
+                    // MetaMask no está conectado, está bien
+                }
+            }
+        });
+
+        // Guardar configuración
+        contractAddressInput.addEventListener('change', () => {
+            localStorage.setItem('luxaeContractAddress', contractAddressInput.value);
+        });
+
+        rpcUrlInput.addEventListener('change', () => {
+            localStorage.setItem('luxaeRpcUrl', rpcUrlInput.value);
+        });
+
+        // ==================== FUNCIONES DE CUPONES ====================
+
+        // Verificar si la API está disponible
+        async function checkAPIHealth() {
+            try {
+                const response = await fetch(`${API_URL}/health`, {
+                    method: 'GET',
+                    signal: AbortSignal.timeout(3000) // Timeout de 3 segundos
+                });
+                return response.ok;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        // Cargar cupones desde la API (función global)
+        window.loadCoupons = async function() {
+            if (!couponsList) {
+                couponsList = document.getElementById('couponsList');
+            }
+            if (!couponFilter) {
+                couponFilter = document.getElementById('couponFilter');
+            }
+            
+            if (!couponsList) {
+                console.error('couponsList no está disponible');
+                return;
+            }
+            
+            // Verificar si la API está disponible primero
+            const loadingStatus = document.getElementById('couponsLoadingStatus');
+            if (loadingStatus) {
+                loadingStatus.textContent = 'Verificando conexión con la API...';
+            }
+            
+            const apiAvailable = await checkAPIHealth();
+            if (!apiAvailable) {
+                couponsList.innerHTML = `
+                    <div style="text-align: center; padding: 40px; background: #fff3cd; border-radius: 8px; border: 1px solid #ffc107;">
+                        <h3 style="color: #856404; margin-bottom: 15px;">⚠️ Servidor API no disponible</h3>
+                        <p style="color: #856404; margin-bottom: 20px;">
+                            El servidor API no está ejecutándose en el puerto 3001.
+                        </p>
+                        <div style="background: white; padding: 20px; border-radius: 6px; text-align: left; display: inline-block; max-width: 500px;">
+                            <p style="margin: 10px 0; color: #333; font-weight: 600;">Para iniciar la API:</p>
+                            <div style="background: #f8f9fa; padding: 15px; border-radius: 4px; margin: 15px 0; font-family: 'Courier New', monospace; font-size: 0.9em; color: #333;">
+                                <div style="margin-bottom: 5px;">cd api</div>
+                                <div style="margin-bottom: 5px;">npm install</div>
+                                <div>npm start</div>
+                            </div>
+                            <p style="margin: 15px 0 5px 0; color: #666; font-size: 0.9em;">
+                                O desde la raíz del proyecto:
+                            </p>
+                            <div style="background: #f8f9fa; padding: 10px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 0.9em; color: #333;">
+                                npm run api:start
+                            </div>
+                            <p style="margin-top: 15px; color: #856404; font-size: 0.85em;">
+                                Una vez iniciada la API, haz clic en "🔄 Actualizar" para cargar los cupones.
+                            </p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            if (loadingStatus) {
+                loadingStatus.textContent = 'Cargando cupones...';
+            }
+            
+            try {
+                const filter = couponFilter ? couponFilter.value : 'all';
+                const url = filter === 'all' ? `${API_URL}/coupons` : `${API_URL}/coupons?status=${filter}`;
+                
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+
+                if (data.success) {
+                    window.displayCoupons(data.coupons);
+                } else {
+                    couponsList.innerHTML = '<p style="color: #dc3545; text-align: center; padding: 20px;">Error al cargar cupones</p>';
+                }
+            } catch (error) {
+                console.error('Error cargando cupones:', error);
+                couponsList.innerHTML = `
+                    <div style="color: #dc3545; text-align: center; padding: 20px;">
+                        <p><strong>Error conectando a la API</strong></p>
+                        <p style="font-size: 0.9em; margin-top: 10px;">${error.message}</p>
+                    </div>
+                `;
+            }
+        };
+
+        // Mostrar cupones en la lista (función global)
+        window.displayCoupons = function(coupons) {
+            if (!couponsList) {
+                couponsList = document.getElementById('couponsList');
+            }
+            
+            if (!couponsList) {
+                console.error('couponsList no está disponible');
+                return;
+            }
+            
+            if (coupons.length === 0) {
+                couponsList.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 40px;">No hay cupones disponibles</p>';
+                return;
+            }
+
+            couponsList.innerHTML = coupons.map(coupon => `
+                <div class="coupon-item ${coupon.status}">
+                    <div class="coupon-info">
+                        <div class="coupon-code">${coupon.code}</div>
+                        <div class="coupon-value">${coupon.value} LUXAE</div>
+                        <div class="coupon-details">
+                            <span class="coupon-status ${coupon.status}">${coupon.status === 'pending' ? 'Pendiente' : coupon.status === 'redeemed' ? 'Canjeado' : 'Cancelado'}</span>
+                            ${coupon.description ? `<br>${coupon.description}` : ''}
+                            ${coupon.recipientAddress ? `<br>Destinatario: ${coupon.recipientAddress.substring(0, 10)}...` : ''}
+                            ${coupon.redeemedAt ? `<br>Canjeado: ${new Date(coupon.redeemedAt).toLocaleString()}` : ''}
+                            ${coupon.transactionHash ? `<br><a href="#" onclick="window.open('https://etherscan.io/tx/${coupon.transactionHash}', '_blank')">Ver transacción</a>` : ''}
+                        </div>
+                    </div>
+                    <div class="coupon-actions">
+                        ${coupon.status === 'pending' ? `
+                            <div class="redeem-form">
+                                <input type="text" id="redeem-${coupon.id}" placeholder="0x..." class="form-group input" style="margin: 0;">
+                                <button onclick="redeemCoupon('${coupon.id}')" class="btn btn-success">Canjear</button>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Cargar estadísticas (función global)
+        window.loadCouponStats = async function() {
+            // Verificar si la API está disponible primero
+            const apiAvailable = await checkAPIHealth();
+            if (!apiAvailable) {
+                // Mostrar ceros o mensaje si la API no está disponible
+                const statTotal = document.getElementById('statTotal');
+                const statPending = document.getElementById('statPending');
+                const statRedeemed = document.getElementById('statRedeemed');
+                const statTotalValue = document.getElementById('statTotalValue');
+                
+                if (statTotal) statTotal.textContent = '-';
+                if (statPending) statPending.textContent = '-';
+                if (statRedeemed) statRedeemed.textContent = '-';
+                if (statTotalValue) statTotalValue.textContent = 'API no disponible';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/stats`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+
+                if (data.success) {
+                    const statTotal = document.getElementById('statTotal');
+                    const statPending = document.getElementById('statPending');
+                    const statRedeemed = document.getElementById('statRedeemed');
+                    const statTotalValue = document.getElementById('statTotalValue');
+                    
+                    if (statTotal) statTotal.textContent = data.stats.total;
+                    if (statPending) statPending.textContent = data.stats.pending;
+                    if (statRedeemed) statRedeemed.textContent = data.stats.redeemed;
+                    if (statTotalValue) statTotalValue.textContent = parseFloat(data.stats.totalValue).toLocaleString('en-US', { maximumFractionDigits: 2 }) + ' LUXAE';
+                }
+            } catch (error) {
+                console.error('Error cargando estadísticas:', error);
+                // No mostrar error en UI para estadísticas, solo dejar valores por defecto
+            }
+        };
+
+        // Crear cupones
+        if (createCouponsBtn) {
+            createCouponsBtn.addEventListener('click', async () => {
+            // Verificar si la API está disponible
+            const apiAvailable = await checkAPIHealth();
+            if (!apiAvailable) {
+                showStatus(createCouponsStatus, '⚠️ El servidor API no está disponible. Inicia la API con: cd api && npm start', 'error');
+                return;
+            }
+            
+            const count = parseInt(couponCount.value);
+            const value = parseFloat(couponValue.value);
+            const recipient = couponRecipient.value.trim();
+            const description = couponDescription.value.trim();
+
+            // Validaciones
+            if (!count || count < 1 || count > 10000) {
+                showStatus(createCouponsStatus, 'El número de cupones debe ser entre 1 y 10000', 'error');
+                return;
+            }
+
+            if (!value || value < 0.000001) {
+                showStatus(createCouponsStatus, 'El valor por cupón debe ser mayor a 0.000001', 'error');
+                return;
+            }
+
+            if (recipient && !/^0x[a-fA-F0-9]{40}$/.test(recipient)) {
+                showStatus(createCouponsStatus, 'Dirección Ethereum inválida', 'error');
+                return;
+            }
+
+            try {
+                createCouponsBtn.disabled = true;
+                createCouponsBtn.innerHTML = '<span class="loading"></span> Creando...';
+
+                const response = await fetch(`${API_URL}/coupons`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        numberOfCoupons: count,
+                        valuePerCoupon: value,
+                        recipientAddress: recipient || undefined,
+                        description: description || undefined
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showStatus(createCouponsStatus, `✓ ${data.message}. Valor total: ${data.totalValue} LUXAE`, 'success');
+                    couponCount.value = '10';
+                    couponValue.value = '100';
+                    couponRecipient.value = '';
+                    couponDescription.value = '';
+                    if (typeof window.loadCoupons === 'function') window.loadCoupons();
+                    if (typeof window.loadCouponStats === 'function') window.loadCouponStats();
+                } else {
+                    showStatus(createCouponsStatus, `Error: ${data.error || data.errors?.[0]?.msg || 'Error desconocido'}`, 'error');
+                }
+            } catch (error) {
+                showStatus(createCouponsStatus, `Error: ${error.message}`, 'error');
+            } finally {
+                if (createCouponsBtn) {
+                    createCouponsBtn.disabled = false;
+                    createCouponsBtn.textContent = 'Crear Cupones';
+                }
+            }
+        });
+        }
+
+        // Canjear cupón (función global para que funcione desde onclick)
+        window.redeemCoupon = async function(couponId) {
+            // Verificar si la API está disponible
+            const apiAvailable = await checkAPIHealth();
+            if (!apiAvailable) {
+                alert('⚠️ El servidor API no está disponible. Por favor inicia la API primero:\n\ncd api\nnpm start');
+                return;
+            }
+            
+            const recipientInput = document.getElementById(`redeem-${couponId}`);
+            if (!recipientInput) {
+                alert('Error: No se encontró el campo de dirección');
+                return;
+            }
+
+            const recipientAddress = recipientInput.value.trim();
+
+            if (!recipientAddress || !/^0x[a-fA-F0-9]{40}$/.test(recipientAddress)) {
+                alert('Por favor ingresa una dirección Ethereum válida');
+                return;
+            }
+
+            try {
+                // Deshabilitar botón
+                const btn = recipientInput.nextElementSibling;
+                if (btn) {
+                    btn.disabled = true;
+                    btn.textContent = 'Canjeando...';
+                }
+
+                const response = await fetch(`${API_URL}/coupons/${couponId}/redeem`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        recipientAddress
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showStatus(createCouponsStatus, `✓ Cupón canjeado exitosamente! Transacción: ${data.transactionHash}`, 'success');
+                    if (typeof window.loadCoupons === 'function') window.loadCoupons();
+                    if (typeof window.loadCouponStats === 'function') window.loadCouponStats();
+                } else {
+                    showStatus(createCouponsStatus, `Error: ${data.error || 'Error desconocido'}`, 'error');
+                }
+            } catch (error) {
+                showStatus(createCouponsStatus, `Error: ${error.message}`, 'error');
+            } finally {
+                // Rehabilitar botón
+                const btn = recipientInput.nextElementSibling;
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'Canjear';
+                }
+            }
+        };
+
+        // Event listeners para cupones
+        if (refreshCouponsBtn) {
+            refreshCouponsBtn.addEventListener('click', () => {
+                if (typeof window.loadCoupons === 'function') window.loadCoupons();
+            });
+        }
+        if (refreshStatsBtn) {
+            refreshStatsBtn.addEventListener('click', () => {
+                if (typeof window.loadCouponStats === 'function') window.loadCouponStats();
+            });
+        }
+        if (couponFilter) {
+            couponFilter.addEventListener('change', () => {
+                if (typeof window.loadCoupons === 'function') window.loadCoupons();
+            });
+        }
+
+        } // Fin de initApp
+    </script>
+</body>
+</html>

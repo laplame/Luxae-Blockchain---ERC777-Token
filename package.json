@@ -1,0 +1,46 @@
+{
+  "name": "luxae-blockchain",
+  "version": "1.0.0",
+  "description": "P2P blockchain with ERC777 Luxae token on Ethereum",
+  "main": "index.js",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy": "hardhat run scripts/deploy.js",
+    "deploy:local": "hardhat run scripts/deploy.js --network localhost",
+    "node": "hardhat node",
+    "frontend": "cd frontend && node server.js",
+    "dev": "concurrently --names \"HARDHAT,FRONTEND,API\" --prefix-colors \"yellow,blue,green\" --kill-others-on-fail false \"npm run node\" \"npm run frontend\" \"npm run api:start\"",
+    "dev:setup": "npm install && cd api && npm install && cd ..",
+    "dev:api": "cd api && npm run dev",
+    "setup": "./setup.sh",
+    "pm2:start": "pm2 start ecosystem.config.js",
+    "pm2:stop": "pm2 stop all",
+    "pm2:restart": "pm2 restart all",
+    "pm2:logs": "pm2 logs",
+    "pm2:status": "pm2 status",
+    "pm2:delete": "pm2 delete all",
+    "deploy:ubuntu": "./deploy.sh",
+    "deploy:pm2": "npm run compile && pm2 start ecosystem.config.js && pm2 save",
+    "api:install": "cd api && npm install",
+    "api:start": "cd api && npm start",
+    "api:dev": "cd api && npm run dev"
+  },
+  "keywords": [
+    "ethereum",
+    "blockchain",
+    "erc777",
+    "smart-contracts"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@openzeppelin/contracts": "^4.9.6",
+    "concurrently": "^8.2.2",
+    "hardhat": "^2.19.0"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1"
+  }
+}
