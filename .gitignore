@@ -34,6 +34,12 @@ frontend/contract-config.json
 api/data/
 !api/data/.gitkeep
 
+# Blockchain data
+blockchain/data/
+!blockchain/data/.gitkeep
+blockchain/keystore/
+blockchain/staking-config.json
+
 # PM2
 .pm2/
 pm2.log

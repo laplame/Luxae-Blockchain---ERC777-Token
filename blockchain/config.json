@@ -1,0 +1,46 @@
+{
+  "chainId": 1337,
+  "chainName": "Luxae Blockchain",
+  "nativeCurrency": {
+    "name": "Luxae",
+    "symbol": "LUXAE",
+    "decimals": 18
+  },
+  "gasConfig": {
+    "baseFeePerGas": "1000000000",
+    "gasLimit": "30000000",
+    "gasPrice": "20000000000",
+    "minGasPrice": "1000000000",
+    "maxGasPrice": "100000000000",
+    "gasPriceMultiplier": 1.0,
+    "dynamicGasPricing": true
+  },
+  "staking": {
+    "enabled": true,
+    "minStakeAmount": "1000000000000000000000",
+    "stakeToken": "LUXAE",
+    "validatorReward": "0.05",
+    "delegatorReward": "0.02",
+    "unbondingPeriod": 86400,
+    "maxValidators": 100,
+    "consensus": "proof-of-stake"
+  },
+  "consensus": {
+    "algorithm": "proof-of-stake",
+    "blockTime": 5,
+    "epochLength": 100,
+    "validatorSetSize": 21
+  },
+  "network": {
+    "port": 8545,
+    "rpcPort": 8545,
+    "wsPort": 8546,
+    "p2pPort": 30303,
+    "hostname": "0.0.0.0"
+  },
+  "genesis": {
+    "alloc": {},
+    "difficulty": "0x400",
+    "gasLimit": "0x1c9c380"
+  }
+}

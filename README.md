@@ -1,455 +1,602 @@
-# Luxae Blockchain - ERC777 Token
-
-A P2P blockchain project based on Ethereum featuring the Luxae (LUXAE) ERC777 token for smart contracts.
+# Luxae Blockchain - Blockchain Personalizada con Control de Gas y Staking
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen)](https://nodejs.org/)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen)](https://nodejs.org/)
+Una blockchain personalizada basada en Ethereum con control total sobre gas, sistema de staking Proof-of-Stake, y ecosistema completo de tokens ERC777.
 
-## Overview
+## 🎯 Visión General
 
-Luxae is an ERC777 token implementation that provides advanced features beyond standard ERC20 tokens:
-- **Operator Management**: Authorize others to send tokens on your behalf
-- **Hooks**: Receive notifications when tokens are sent or received
-- **Backward Compatible**: Works with all ERC20 wallets and exchanges
-- **Enhanced Security**: Built on OpenZeppelin's battle-tested contracts
+Luxae Blockchain es una blockchain independiente que ofrece:
 
-## Features
+- ✅ **Control Total de Gas**: Configuración personalizada de precios, límites y dinámica
+- ✅ **Sistema de Staking**: Proof-of-Stake con validadores y delegadores
+- ✅ **Token ERC777**: Token avanzado con operadores y hooks
+- ✅ **API Completa**: Endpoints para contratos, cupones, tokens, swaps y transferencias
+- ✅ **Frontend Interactivo**: Interfaz web para gestionar tokens y staking
+- ✅ **Compatibilidad EVM**: Contratos Solidity funcionan sin modificaciones
 
-- ✅ ERC777 token standard implementation
-- ✅ Initial supply: 1 billion tokens (1,000,000,000 LUXAE)
-- ✅ 18 decimal places
-- ✅ Minting capability (owner only)
-- ✅ Burning capability
-- ✅ Operator authorization
-- ✅ Comprehensive test suite
+## 🏗️ Arquitectura Tecnológica
 
-## Prerequisites
+### Stack Tecnológico
 
-- Node.js (v16 or higher)
-- npm or yarn
-- Git
+**Blockchain Layer:**
+- **Geth (Go-Ethereum)**: Cliente de blockchain modificado con parámetros personalizados
+- **Hardhat**: Framework de desarrollo para contratos inteligentes
+- **Solidity 0.8.20**: Lenguaje de programación para contratos
+- **EVM (Ethereum Virtual Machine)**: Máquina virtual compatible con Ethereum
 
-## Installation
+**Smart Contracts:**
+- **LuxaeToken (ERC777)**: Token principal con características avanzadas
+- **StakingContract**: Sistema de staking Proof-of-Stake
+- **ERC1820Registry**: Registro para compatibilidad ERC777
 
-### Opción 1: Setup Automatizado (Recomendado)
+**Backend:**
+- **Node.js + Express**: Servidor API REST
+- **Ethers.js**: Biblioteca para interactuar con blockchain
+- **PM2**: Gestión de procesos en producción
+
+**Frontend:**
+- **HTML/CSS/JavaScript**: Interfaz web moderna
+- **Ethers.js**: Conexión con wallets y contratos
+- **MetaMask**: Integración con wallets
+
+### ¿Cómo Funciona la Blockchain?
+
+Luxae Blockchain utiliza una arquitectura híbrida:
+
+1. **Nodo Blockchain Personalizado**: 
+   - Basado en Geth (cliente oficial de Ethereum)
+   - Parámetros de consenso personalizados
+   - Control de gas y límites configurables
+   - Genesis block personalizado
+
+2. **Consenso Proof-of-Stake**:
+   - Validadores hacen stake de tokens LUXAE
+   - Delegadores pueden delegar su stake
+   - Recompensas distribuidas proporcionalmente
+   - Período de unbonding para seguridad
+
+3. **Compatibilidad EVM**:
+   - Todos los contratos Solidity funcionan
+   - Herramientas de Ethereum compatibles
+   - Wallets estándar (MetaMask, etc.)
+
+## 🚀 Inicio Rápido
+
+### Prerrequisitos
+
+- **Node.js** v16 o superior
+- **npm** v7 o superior
+- **Git**
+- **Geth** (se instala automáticamente con el script)
+
+### Instalación
+
+#### Opción 1: Setup Automatizado (Recomendado)
 
 ```bash
 # Clonar el repositorio
-git clone <tu-repositorio-url>
-cd block
+git clone https://github.com/laplame/Luxae-Blockchain---ERC777-Token.git
+cd Luxae-Blockchain---ERC777-Token
 
-# Ejecutar script de setup
+# Ejecutar setup completo
 chmod +x setup.sh
 ./setup.sh
 ```
 
-O usando npm:
-```bash
-npm run setup
-```
+El script realizará:
+- ✅ Verificación de Node.js y npm
+- ✅ Instalación de dependencias
+- ✅ Configuración de archivos `.env`
+- ✅ Descarga de `ethers.min.js`
+- ✅ Compilación de contratos
 
-### Opción 2: Setup Manual
+#### Opción 2: Setup Manual
 
-1. Install dependencies:
 ```bash
+# 1. Instalar dependencias principales
 npm install
-```
 
-2. Install API dependencies:
-```bash
+# 2. Instalar dependencias de la API
 cd api && npm install && cd ..
-```
 
-Or use the setup script:
-```bash
-npm run dev:setup
-```
-
-3. Configure environment variables:
-```bash
+# 3. Configurar variables de entorno
 cp .env.example .env
 cp api/.env.example api/.env
 # Edita los archivos .env con tus valores
-```
 
-## Development
-
-### Compile Contracts
-```bash
+# 4. Compilar contratos
 npm run compile
 ```
 
-### Run Tests
-```bash
-npm run test
-```
+## 🔧 Levantar los Nodos
 
-### Start Local Hardhat Node
+### Desarrollo Local (Hardhat Network)
+
+Para desarrollo y testing rápido:
+
 ```bash
+# Iniciar nodo Hardhat (red local)
 npm run node
 ```
 
-In a separate terminal, deploy to local network:
+Esto iniciará un nodo local en `http://localhost:8545` con:
+- Chain ID: 1337
+- Gas gratuito (para desarrollo)
+- Cuentas pre-fundadas con ETH de prueba
+
+### Producción (Geth Personalizado)
+
+Para una blockchain independiente con control total:
+
 ```bash
+# Opción 1: Script automatizado
+npm run blockchain:start
+
+# Opción 2: Manual
+./blockchain/start-node.sh
+```
+
+El script:
+- ✅ Verifica/instala Geth automáticamente
+- ✅ Inicializa la blockchain con genesis block personalizado
+- ✅ Configura gas según `blockchain/config.json`
+- ✅ Inicia minería automática
+- ✅ Expone RPC en puerto 8545
+
+### Configuración del Nodo
+
+Edita `blockchain/config.json` para personalizar:
+
+```json
+{
+  "chainId": 1337,
+  "gasConfig": {
+    "baseFeePerGas": "1000000000",    // 1 gwei
+    "gasLimit": "30000000",            // 30M
+    "minGasPrice": "1000000000",       // Precio mínimo
+    "maxGasPrice": "100000000000"      // Precio máximo
+  },
+  "staking": {
+    "minStakeAmount": "1000000000000000000000",  // 1000 LUXAE
+    "validatorReward": "0.05",         // 5%
+    "delegatorReward": "0.02"          // 2%
+  }
+}
+```
+
+## 📦 Desplegar Contratos
+
+### 1. Desplegar Token LUXAE
+
+```bash
+# En una terminal separada (con el nodo corriendo)
 npm run deploy:local
 ```
 
-### Start Frontend
+Esto desplegará:
+- **LuxaeToken**: Token ERC777 con 1 billón de tokens iniciales
+- **ERC1820Registry**: Registro necesario para ERC777
+
+### 2. Desplegar Contrato de Staking
+
 ```bash
-npm run frontend
+npm run deploy:staking
 ```
 
-Then open `http://localhost:3000` in your browser.
+Esto desplegará:
+- **StakingContract**: Sistema de staking con validadores y delegadores
 
-### Start All Services (Development)
+Los contratos se guardan automáticamente en `frontend/contract-config.json` para uso del frontend.
+
+## 🌐 Iniciar Todos los Servicios
+
+### Desarrollo (Todos los Servicios)
+
 ```bash
 npm run dev
 ```
 
-This will start all three services simultaneously:
-- **Hardhat Node**: `http://localhost:8545` (yellow logs)
-- **Frontend**: `http://localhost:3000` (blue logs)
-- **API**: `http://localhost:3001` (green logs)
+Esto inicia simultáneamente:
+- 🟡 **Hardhat Node**: `http://localhost:8545` (yellow logs)
+- 🔵 **Frontend**: `http://localhost:3000` (blue logs)
+- 🟢 **API**: `http://localhost:3001` (green logs)
 
-The output will be color-coded and prefixed with service names for easy identification.
+Presiona `Ctrl+C` para detener todos los servicios.
 
-**Note**: Make sure API dependencies are installed first:
-```bash
-cd api && npm install && cd ..
-```
-
-Press `Ctrl+C` to stop all services at once.
-
-## Deployment
-
-### Local Network
-```bash
-npm run deploy:local
-```
-
-### Testnet (Sepolia)
-1. Create a `.env` file in the root directory:
-```
-SEPOLIA_URL=https://sepolia.infura.io/v3/YOUR_INFURA_KEY
-PRIVATE_KEY=your_private_key_here
-```
-
-2. Deploy:
-```bash
-npx hardhat run scripts/deploy.js --network sepolia
-```
-
-### Mainnet
-1. Update `.env` with mainnet configuration:
-```
-MAINNET_URL=https://mainnet.infura.io/v3/YOUR_INFURA_KEY
-PRIVATE_KEY=your_private_key_here
-```
-
-2. Deploy:
-```bash
-npx hardhat run scripts/deploy.js --network mainnet
-```
-
-## Contract Details
-
-### LuxaeToken
-
-**Contract Address**: Deployed address will be shown after deployment
-
-**Token Details**:
-- Name: Luxae
-- Symbol: LUXAE
-- Decimals: 18
-- Initial Supply: 1,000,000,000 LUXAE
-- Standard: ERC777 (ERC20 compatible)
-
-**Key Functions**:
-- `mint(address to, uint256 amount, bytes userData, bytes operatorData)`: Mint new tokens (owner only)
-- `burn(uint256 amount, bytes data)`: Burn tokens from your account
-- `operatorBurn(address from, uint256 amount, bytes data, bytes operatorData)`: Burn tokens as an operator
-- `authorizeOperator(address operator)`: Authorize an operator
-- `revokeOperator(address operator)`: Revoke operator authorization
-
-## ERC777 Advantages
-
-1. **Operators**: Authorize trusted addresses to send tokens on your behalf
-2. **Hooks**: Contracts can implement `tokensReceived` and `tokensToSend` hooks
-3. **Batch Operations**: Send tokens to multiple addresses in one transaction
-4. **Backward Compatible**: Works with all ERC20 interfaces
-
-## Dependencia de Ethereum
-
-### ¿El token Luxae depende de Ethereum?
-
-**Sí, el token Luxae está completamente basado en la blockchain de Ethereum.** Esto significa:
-
-1. **Ethereum como Base**: Luxae es un token ERC777 que se ejecuta sobre la red Ethereum. No es una blockchain independiente, sino un contrato inteligente que utiliza la infraestructura de Ethereum.
-
-2. **Compatibilidad con Ethereum**:
-   - Se despliega en la red Ethereum (mainnet, testnets, o redes locales)
-   - Utiliza la máquina virtual de Ethereum (EVM) para ejecutarse
-   - Usa ETH como moneda nativa para pagar las tarifas de gas
-   - Es compatible con todas las herramientas y wallets de Ethereum (MetaMask, MyEtherWallet, etc.)
-
-3. **Ventajas de estar en Ethereum**:
-   - **Seguridad**: Beneficia de la seguridad y descentralización de la red Ethereum
-   - **Interoperabilidad**: Puede interactuar con otros contratos y tokens en Ethereum
-   - **Ecosistema**: Acceso a todo el ecosistema DeFi, exchanges, y herramientas existentes
-   - **Estándar**: Sigue los estándares ERC777 y ERC20 reconocidos mundialmente
-
-4. **¿Qué significa esto en la práctica?**:
-   - Para crear/transferir/quemar tokens Luxae, necesitas ETH para pagar las tarifas de gas
-   - El token existe como un contrato inteligente en la blockchain de Ethereum
-   - Todas las transacciones se registran en la blockchain de Ethereum
-   - Puedes ver el token en exploradores de bloques como Etherscan
-
-### Sepolia Testnet
-
-**Sepolia es una red de prueba (testnet) de Ethereum** utilizada para desarrollo y testing antes de desplegar en mainnet.
-
-#### ¿Qué papel tiene Sepolia?
-
-1. **Red de Pruebas**:
-   - Sepolia es una de las testnets oficiales de Ethereum
-   - Permite probar contratos inteligentes sin usar ETH real
-   - Los tokens y transacciones en Sepolia no tienen valor real
-
-2. **Para qué se usa**:
-   - **Desarrollo**: Probar contratos antes de desplegarlos en mainnet
-   - **Testing**: Verificar funcionalidades sin riesgo financiero
-   - **Aprendizaje**: Entender cómo funcionan los contratos sin costo
-   - **Integración**: Probar integraciones con otras aplicaciones
-
-3. **Cómo obtener ETH de prueba en Sepolia**:
-   - **Faucets de Sepolia**: Sitios web que regalan ETH de prueba gratis
-     - [Sepolia Faucet](https://sepoliafaucet.com/)
-     - [Alchemy Sepolia Faucet](https://sepoliafaucet.com/)
-     - [Infura Sepolia Faucet](https://www.infura.io/faucet/sepolia)
-   - Solo necesitas tu dirección de wallet y solicitar ETH de prueba
-
-4. **Diferencias entre Sepolia y Mainnet**:
-   - **Sepolia**: ETH sin valor, para pruebas, más rápido, menos seguro
-   - **Mainnet**: ETH real, producción, más lento, completamente seguro
-
-5. **Cuándo usar Sepolia vs Mainnet**:
-   - **Usa Sepolia cuando**:
-     - Estás desarrollando o probando
-     - Quieres aprender sin riesgo
-     - Necesitas probar funcionalidades nuevas
-   - **Usa Mainnet cuando**:
-     - Tu contrato está completamente probado
-     - Estás listo para producción
-     - Los usuarios usarán tokens con valor real
-
-#### Configuración para Sepolia
-
-Para desplegar en Sepolia:
-
-1. Obtén ETH de prueba desde un faucet
-2. Configura tu `.env`:
-   ```
-   SEPOLIA_URL=https://sepolia.infura.io/v3/YOUR_INFURA_KEY
-   PRIVATE_KEY=your_private_key_here
-   ```
-3. Despliega:
-   ```bash
-   npx hardhat run scripts/deploy.js --network sepolia
-   ```
-
-**Nota**: Sepolia es ideal para probar Luxae Token antes de desplegarlo en Ethereum Mainnet donde tendrá valor real.
-
-## Security
-
-This project uses OpenZeppelin's audited contracts. However, always:
-- Audit your contracts before mainnet deployment
-- Test thoroughly on testnets
-- Never share your private keys
-- Use hardware wallets for mainnet deployments
-
-## License
-
-MIT
-
-## Frontend
-
-Una interfaz web completa está disponible en la carpeta `frontend/`. 
-
-### Usar el Frontend
-
-1. Abre `frontend/index.html` en tu navegador
-2. Ingresa la dirección del contrato desplegado
-3. Conecta tu wallet (MetaMask)
-4. ¡Listo para interactuar con el token!
-
-Ver `frontend/README.md` para más detalles.
-
-## API CRUD para Cupones
-
-Un servidor API REST completo para gestionar cupones con valores estrictos y transferencia automática de tokens.
-
-### Instalación de la API
+### Producción (PM2)
 
 ```bash
-cd api
-npm install
+# Desplegar con PM2
+npm run deploy:pm2
+
+# Ver estado
+npm run pm2:status
+
+# Ver logs
+npm run pm2:logs
 ```
 
-### Configuración
+## 📡 API - Endpoints Disponibles
 
-1. Copia el archivo de ejemplo de configuración:
+La API proporciona endpoints completos para gestionar contratos, cupones, tokens, swaps y transferencias.
+
+### Base URL
+```
+http://localhost:3001/api
+```
+
+### Endpoints de Contratos
+
+#### `GET /api/contracts`
+Obtener información de todos los contratos desplegados
+
+**Respuesta:**
+```json
+{
+  "success": true,
+  "contracts": [
+    {
+      "address": "0x...",
+      "name": "LuxaeToken",
+      "type": "ERC777",
+      "deployedAt": "2024-01-01T00:00:00.000Z",
+      "totalSupply": "1000000000000000000000000000",
+      "decimals": 18
+    }
+  ]
+}
+```
+
+#### `GET /api/contracts/:address`
+Obtener información detallada de un contrato específico
+
+### Endpoints de Cupones
+
+#### `GET /api/coupons`
+Listar todos los cupones (con filtro opcional `?status=pending`)
+
+#### `POST /api/coupons`
+Crear nuevos cupones
+
+**Body:**
+```json
+{
+  "numberOfCoupons": 10,
+  "valuePerCoupon": 100,
+  "description": "Cupones promocionales"
+}
+```
+
+#### `POST /api/coupons/:id/redeem`
+Canjear un cupón y transferir tokens
+
+**Body:**
+```json
+{
+  "recipientAddress": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
+}
+```
+
+#### `GET /api/stats`
+Estadísticas de cupones (total, pendientes, canjeados, valor total)
+
+### Endpoints de Tokens
+
+#### `GET /api/tokens`
+Obtener información del token LUXAE
+
+**Respuesta:**
+```json
+{
+  "success": true,
+  "token": {
+    "name": "Luxae",
+    "symbol": "LUXAE",
+    "decimals": 18,
+    "totalSupply": "1000000000000000000000000000",
+    "contractAddress": "0x...",
+    "holders": 150,
+    "transactions": 1250
+  }
+}
+```
+
+#### `GET /api/tokens/balance/:address`
+Obtener balance de tokens de una dirección
+
+#### `GET /api/tokens/holders`
+Listar top holders de tokens
+
+### Endpoints de Transferencias
+
+#### `GET /api/transfers`
+Obtener historial de transferencias
+
+**Query Parameters:**
+- `from`: Dirección del remitente (opcional)
+- `to`: Dirección del destinatario (opcional)
+- `limit`: Número de resultados (default: 50)
+- `offset`: Offset para paginación (default: 0)
+
+**Respuesta:**
+```json
+{
+  "success": true,
+  "transfers": [
+    {
+      "txHash": "0x...",
+      "from": "0x...",
+      "to": "0x...",
+      "amount": "1000000000000000000",
+      "amountFormatted": "1.0",
+      "timestamp": "2024-01-01T00:00:00.000Z",
+      "blockNumber": 12345
+    }
+  ],
+  "total": 1250,
+  "limit": 50,
+  "offset": 0
+}
+```
+
+#### `GET /api/transfers/stats`
+Estadísticas de transferencias
+
+**Respuesta:**
+```json
+{
+  "success": true,
+  "stats": {
+    "totalTransfers": 1250,
+    "totalVolume": "5000000000000000000000",
+    "uniqueSenders": 120,
+    "uniqueReceivers": 150,
+    "averageTransfer": "4000000000000000000",
+    "last24Hours": {
+      "count": 45,
+      "volume": "180000000000000000000"
+    }
+  }
+}
+```
+
+### Endpoints de Swaps
+
+#### `GET /api/swaps`
+Obtener historial de swaps (preparado para futuros DEX)
+
+**Respuesta:**
+```json
+{
+  "success": true,
+  "swaps": [],
+  "message": "Sistema de swaps en desarrollo"
+}
+```
+
+#### `GET /api/swaps/stats`
+Estadísticas de swaps
+
+### Endpoints Generales
+
+#### `GET /api/health`
+Estado del servidor y conexión al contrato
+
+#### `GET /api/network`
+Información de la red blockchain
+
+**Respuesta:**
+```json
+{
+  "success": true,
+  "network": {
+    "chainId": 1337,
+    "name": "Luxae Blockchain",
+    "rpcUrl": "http://localhost:8545",
+    "blockNumber": 12345,
+    "gasPrice": "20000000000",
+    "gasPriceFormatted": "20 gwei"
+  }
+}
+```
+
+## 🔍 Ejemplos de Uso de la API
+
+### Obtener información del token
+
 ```bash
-cp .env.example .env
+curl http://localhost:3001/api/tokens
 ```
 
-2. Edita `.env` con tus valores:
-```
-CONTRACT_ADDRESS=0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
-RPC_URL=http://127.0.0.1:8545
-PRIVATE_KEY=0x...  # Tu clave privada para firmar transacciones
-PORT=3001
-```
-
-**⚠️ IMPORTANTE**: Nunca compartas tu `PRIVATE_KEY` en producción. Solo usa en desarrollo.
-
-### Iniciar la API
+### Obtener historial de transferencias
 
 ```bash
-npm start
-# o en modo desarrollo
-npm run dev
+curl "http://localhost:3001/api/transfers?limit=10"
 ```
 
-El servidor API estará disponible en `http://localhost:3001`
+### Obtener estadísticas de transferencias
 
-### Endpoints Disponibles
+```bash
+curl http://localhost:3001/api/transfers/stats
+```
 
-- **GET** `/api/coupons` - Listar todos los cupones
-- **GET** `/api/coupons/:id` - Obtener un cupón específico
-- **POST** `/api/coupons` - Crear nuevos cupones
-- **PUT** `/api/coupons/:id` - Actualizar un cupón
-- **DELETE** `/api/coupons/:id` - Eliminar un cupón
-- **POST** `/api/coupons/:id/redeem` - Canjear cupón y transferir tokens
-- **GET** `/api/stats` - Estadísticas de cupones
-- **GET** `/api/health` - Estado del servidor
-
-### Ejemplo de Uso
-
-#### Crear 10 cupones de 100 tokens cada uno:
+### Crear cupones
 
 ```bash
 curl -X POST http://localhost:3001/api/coupons \
   -H "Content-Type: application/json" \
   -d '{
-    "numberOfCoupons": 10,
+    "numberOfCoupons": 5,
     "valuePerCoupon": 100,
     "description": "Cupones promocionales"
   }'
 ```
 
-#### Canjear un cupón:
+## 💻 Frontend
+
+El frontend está disponible en `http://localhost:3000` después de iniciar el servidor.
+
+### Características del Frontend
+
+- 🔗 **Conexión de Wallet**: MetaMask y otros wallets compatibles
+- 💰 **Gestión de Tokens**: Ver balance, transferir, mintear, quemar
+- 👥 **Operadores**: Autorizar/revocar operadores ERC777
+- 🌐 **Estado de Red**: Chain ID, bloque actual, precio de gas
+- 📊 **Cupones**: Crear y gestionar cupones
+- 📖 **Documentación**: Ver documentación integrada
+
+### Iniciar Frontend
 
 ```bash
-curl -X POST http://localhost:3001/api/coupons/{coupon-id}/redeem \
-  -H "Content-Type: application/json" \
-  -d '{
-    "recipientAddress": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
-  }'
+npm run frontend
 ```
 
-### Validaciones Estrictas
-
-- **Número de cupones**: Entero entre 1 y 10,000
-- **Valor por cupón**: Mayor a 0.000001 (precisión de 18 decimales)
-- **Direcciones**: Deben ser direcciones Ethereum válidas
-- **Estado**: Solo puede ser: `pending`, `redeemed`, `cancelled`
-
-### Características
-
-- ✅ Transferencia automática de tokens al canjear
-- ✅ Generación de códigos únicos para cada cupón
-- ✅ Base de datos JSON (fácil migrar a SQL)
-- ✅ Validación de balance antes de transferir
-- ✅ Estadísticas en tiempo real
-
-Ver `api/README.md` para documentación completa de la API.
-
-## Quick Start (All Services)
-
-To start everything at once for development:
+O como parte de todos los servicios:
 
 ```bash
-# Install all dependencies
-npm install
-cd api && npm install && cd ..
-
-# Start all services
 npm run dev
 ```
 
-This will start:
-- Hardhat node on port 8545
-- Frontend on port 3000
-- API on port 3001
+## 🏛️ Sistema de Staking
 
-Then:
-1. Open `http://localhost:3000` in your browser
-2. Deploy the contract: `npm run deploy:local` (in a new terminal)
-3. The frontend will automatically load the contract configuration
+### Registrar Validador
 
-## Deployment
-
-Para desplegar en producción con PM2, consulta la guía completa en [DEPLOY.md](./DEPLOY.md).
-
-### Despliegue Rápido
-
-```bash
-# Setup inicial (primera vez)
-./setup.sh
-
-# Desplegar con PM2
-./deploy.sh
-# O
-npm run deploy:pm2
+```javascript
+// Desde el frontend o mediante contrato
+await stakingContract.registerValidator(
+  ethers.parseEther("1000") // Mínimo 1000 LUXAE
+);
 ```
 
-## Contributing
+### Delegar Stake
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+```javascript
+await stakingContract.delegateStake(
+  validatorAddress,
+  ethers.parseEther("500")
+);
+```
+
+### Retirar Stake
+
+```javascript
+// 1. Iniciar unbonding
+await stakingContract.startUnbonding(validatorAddress);
+
+// 2. Esperar período de unbonding (24 horas por defecto)
+
+// 3. Retirar
+await stakingContract.withdrawStake(validatorAddress);
+```
+
+## 🔐 Seguridad
+
+- ✅ Contratos auditados de OpenZeppelin
+- ✅ Validación estricta en API
+- ✅ ReentrancyGuard en contratos de staking
+- ✅ Período de unbonding para prevenir ataques
+- ✅ Límites de gas configurables
+
+**⚠️ IMPORTANTE**: 
+- Nunca compartas tus claves privadas
+- Usa `.env` para configuración sensible
+- Audita contratos antes de producción
+- Prueba exhaustivamente en testnet
+
+## 📚 Documentación Adicional
+
+- **[DEPLOY.md](./DEPLOY.md)**: Guía completa de despliegue con PM2
+- **[BLOCKCHAIN.md](./BLOCKCHAIN.md)**: Documentación técnica de la blockchain
+- **[GITHUB.md](./GITHUB.md)**: Guía para GitHub
+- **[api/README.md](./api/README.md)**: Documentación completa de la API
+- **[frontend/README.md](./frontend/README.md)**: Documentación del frontend
+
+## 🛠️ Comandos Útiles
+
+```bash
+# Compilar contratos
+npm run compile
+
+# Ejecutar tests
+npm test
+
+# Iniciar nodo Hardhat
+npm run node
+
+# Desplegar contratos localmente
+npm run deploy:local
+
+# Desplegar contrato de staking
+npm run deploy:staking
+
+# Iniciar blockchain personalizada
+npm run blockchain:start
+
+# Iniciar todos los servicios (desarrollo)
+npm run dev
+
+# Desplegar con PM2 (producción)
+npm run deploy:pm2
+
+# Ver logs de PM2
+npm run pm2:logs
+
+# Ver estado de PM2
+npm run pm2:status
+```
+
+## 🗂️ Estructura del Proyecto
+
+```
+block/
+├── blockchain/          # Configuración de blockchain personalizada
+│   ├── config.json      # Configuración de gas y staking
+│   ├── genesis.json     # Bloque génesis
+│   └── start-node.sh    # Script para iniciar nodo
+├── contracts/           # Contratos inteligentes
+│   ├── LuxaeToken.sol   # Token ERC777
+│   ├── StakingContract.sol  # Contrato de staking
+│   └── ERC1820Registry.sol   # Registro ERC1820
+├── scripts/             # Scripts de despliegue
+│   ├── deploy.js        # Desplegar token
+│   └── deploy-staking.js    # Desplegar staking
+├── test/                # Tests
+├── api/                 # Servidor API REST
+│   ├── server.js        # Servidor Express
+│   └── data/            # Datos (cupones, etc.)
+├── frontend/            # Interfaz web
+│   ├── index.html       # Frontend principal
+│   └── server.js        # Servidor HTTP
+├── ecosystem.config.js  # Configuración PM2
+├── hardhat.config.js    # Configuración Hardhat
+└── package.json         # Dependencias
+```
+
+## 🤝 Contribuir
+
+Las contribuciones son bienvenidas. Por favor:
 
 1. Fork el proyecto
-2. Crea tu rama de feature (`git checkout -b feature/AmazingFeature`)
+2. Crea tu rama (`git checkout -b feature/AmazingFeature`)
 3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
 4. Push a la rama (`git push origin feature/AmazingFeature`)
 5. Abre un Pull Request
 
-## License
+## 📄 Licencia
 
-MIT
+MIT License - ver [LICENSE](./LICENSE) para más detalles
 
-## Support
+## 🆘 Soporte
 
-Si encuentras problemas o tienes preguntas:
-- Abre un [issue](https://github.com/tu-usuario/tu-repo/issues)
-- Consulta la [documentación de despliegue](./DEPLOY.md)
-- Revisa los logs: `pm2 logs`
+Si encuentras problemas:
 
-1. Fork el proyecto
-2. Crea tu rama de feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
+1. Revisa los logs: `npm run pm2:logs` o `tail -f logs/*.log`
+2. Verifica la configuración: `cat .env` y `cat api/.env`
+3. Consulta la documentación en los archivos README.md
+4. Abre un [issue](https://github.com/laplame/Luxae-Blockchain---ERC777-Token/issues)
 
-## License
+---
 
-MIT
-
-## Support
-
-Si encuentras problemas o tienes preguntas:
-- Abre un [issue](https://github.com/tu-usuario/tu-repo/issues)
-- Consulta la [documentación de despliegue](./DEPLOY.md)
-- Revisa los logs: `pm2 logs`
+**Desarrollado con ❤️ para la comunidad blockchain**

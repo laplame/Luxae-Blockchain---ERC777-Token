@@ -8,6 +8,8 @@
     "test": "hardhat test",
     "deploy": "hardhat run scripts/deploy.js",
     "deploy:local": "hardhat run scripts/deploy.js --network localhost",
+    "deploy:staking": "hardhat run scripts/deploy-staking.js --network localhost",
+    "blockchain:start": "./blockchain/start-node.sh",
     "node": "hardhat node",
     "frontend": "cd frontend && node server.js",
     "dev": "concurrently --names \"HARDHAT,FRONTEND,API\" --prefix-colors \"yellow,blue,green\" --kill-others-on-fail false \"npm run node\" \"npm run frontend\" \"npm run api:start\"",

@@ -45,11 +45,16 @@ const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS || '';
 const RPC_URL = process.env.RPC_URL || 'http://127.0.0.1:8545';
 const PRIVATE_KEY = process.env.PRIVATE_KEY || '';
 
-// ABI del contrato LuxaeToken (simplificado)
+// ABI del contrato LuxaeToken (completo)
 const CONTRACT_ABI = [
-  "function transfer(address to, uint256 amount) returns (bool)",
+  "function name() view returns (string)",
+  "function symbol() view returns (string)",
+  "function decimals() view returns (uint8)",
+  "function totalSupply() view returns (uint256)",
   "function balanceOf(address) view returns (uint256)",
-  "function decimals() view returns (uint8)"
+  "function transfer(address to, uint256 amount) returns (bool)",
+  "function owner() view returns (address)",
+  "event Transfer(address indexed from, address indexed to, uint256 value)"
 ];
 
 let provider, contract, signer;
@@ -452,6 +457,441 @@ app.get('/api/stats', (req, res) => {
   }
 });
 
+// ==================== ENDPOINTS DE CONTRATOS ====================
+
+// GET /api/contracts - Obtener información de todos los contratos
+app.get('/api/contracts', async (req, res) => {
+  try {
+    const contracts = [];
+    
+    if (CONTRACT_ADDRESS && contract) {
+      try {
+        const [name, symbol, decimals, totalSupply, owner] = await Promise.all([
+          contract.name(),
+          contract.symbol(),
+          contract.decimals(),
+          contract.totalSupply(),
+          contract.owner().catch(() => null)
+        ]);
+
+        // Cargar configuración de despliegue si existe
+        const contractConfigPath = path.join(__dirname, '../frontend/contract-config.json');
+        let deployedAt = null;
+        if (fs.existsSync(contractConfigPath)) {
+          const config = JSON.parse(fs.readFileSync(contractConfigPath, 'utf8'));
+          deployedAt = config.deployedAt || null;
+        }
+
+        contracts.push({
+          address: CONTRACT_ADDRESS,
+          name: name,
+          type: 'ERC777',
+          deployedAt: deployedAt,
+          totalSupply: totalSupply.toString(),
+          totalSupplyFormatted: ethers.utils.formatUnits(totalSupply, decimals),
+          decimals: decimals,
+          owner: owner,
+          network: 'Luxae Blockchain',
+          chainId: 1337
+        });
+      } catch (error) {
+        console.error('Error obteniendo información del contrato:', error.message);
+      }
+    }
+
+    res.json({
+      success: true,
+      contracts: contracts,
+      count: contracts.length
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Error al obtener contratos',
+      message: error.message
+    });
+  }
+});
+
+// GET /api/contracts/:address - Obtener información detallada de un contrato
+app.get('/api/contracts/:address', async (req, res) => {
+  try {
+    const address = req.params.address;
+    
+    if (!ethers.utils.isAddress(address)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Dirección de contrato inválida'
+      });
+    }
+
+    if (address.toLowerCase() !== CONTRACT_ADDRESS.toLowerCase()) {
+      return res.status(404).json({
+        success: false,
+        error: 'Contrato no encontrado'
+      });
+    }
+
+    if (!contract) {
+      return res.status(503).json({
+        success: false,
+        error: 'Contrato no configurado'
+      });
+    }
+
+    const [name, symbol, decimals, totalSupply, owner] = await Promise.all([
+      contract.name(),
+      contract.symbol(),
+      contract.decimals(),
+      contract.totalSupply(),
+      contract.owner().catch(() => null)
+    ]);
+
+    res.json({
+      success: true,
+      contract: {
+        address: address,
+        name: name,
+        symbol: symbol,
+        type: 'ERC777',
+        decimals: decimals,
+        totalSupply: totalSupply.toString(),
+        totalSupplyFormatted: ethers.utils.formatUnits(totalSupply, decimals),
+        owner: owner,
+        network: 'Luxae Blockchain',
+        chainId: 1337
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Error al obtener información del contrato',
+      message: error.message
+    });
+  }
+});
+
+// ==================== ENDPOINTS DE TOKENS ====================
+
+// GET /api/tokens - Obtener información del token LUXAE
+app.get('/api/tokens', async (req, res) => {
+  try {
+    if (!contract) {
+      return res.status(503).json({
+        success: false,
+        error: 'Contrato no configurado'
+      });
+    }
+
+    const [name, symbol, decimals, totalSupply] = await Promise.all([
+      contract.name(),
+      contract.symbol(),
+      contract.decimals(),
+      contract.totalSupply()
+    ]);
+
+    // Obtener información de red
+    const blockNumber = await provider.getBlockNumber();
+    const gasPrice = await provider.getGasPrice();
+
+    res.json({
+      success: true,
+      token: {
+        name: name,
+        symbol: symbol,
+        decimals: decimals,
+        totalSupply: totalSupply.toString(),
+        totalSupplyFormatted: ethers.utils.formatUnits(totalSupply, decimals),
+        contractAddress: CONTRACT_ADDRESS,
+        network: {
+          chainId: (await provider.getNetwork()).chainId,
+          name: (await provider.getNetwork()).name,
+          blockNumber: blockNumber,
+          gasPrice: gasPrice.toString(),
+          gasPriceFormatted: ethers.utils.formatUnits(gasPrice, 'gwei') + ' gwei'
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Error al obtener información del token',
+      message: error.message
+    });
+  }
+});
+
+// GET /api/tokens/balance/:address - Obtener balance de una dirección
+app.get('/api/tokens/balance/:address', async (req, res) => {
+  try {
+    const address = req.params.address;
+    
+    if (!ethers.utils.isAddress(address)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Dirección inválida'
+      });
+    }
+
+    if (!contract) {
+      return res.status(503).json({
+        success: false,
+        error: 'Contrato no configurado'
+      });
+    }
+
+    const [balance, decimals] = await Promise.all([
+      contract.balanceOf(address),
+      contract.decimals()
+    ]);
+
+    res.json({
+      success: true,
+      address: address,
+      balance: balance.toString(),
+      balanceFormatted: ethers.utils.formatUnits(balance, decimals),
+      symbol: await contract.symbol()
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Error al obtener balance',
+      message: error.message
+    });
+  }
+});
+
+// GET /api/tokens/holders - Listar top holders (preparado para futura implementación)
+app.get('/api/tokens/holders', async (req, res) => {
+  try {
+    res.json({
+      success: true,
+      message: 'Endpoint de holders en desarrollo. Requiere indexación de eventos.',
+      holders: []
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// ==================== ENDPOINTS DE TRANSFERENCIAS ====================
+
+// GET /api/transfers - Obtener historial de transferencias
+app.get('/api/transfers', async (req, res) => {
+  try {
+    if (!contract || !provider) {
+      return res.status(503).json({
+        success: false,
+        error: 'Contrato o proveedor no configurado'
+      });
+    }
+
+    const from = req.query.from;
+    const to = req.query.to;
+    const limit = parseInt(req.query.limit) || 50;
+    const offset = parseInt(req.query.offset) || 0;
+
+    // Validar direcciones si se proporcionan
+    if (from && !ethers.utils.isAddress(from)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Dirección "from" inválida'
+      });
+    }
+    if (to && !ethers.utils.isAddress(to)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Dirección "to" inválida'
+      });
+    }
+
+    // Obtener eventos de Transfer
+    const filter = contract.filters.Transfer(from || null, to || null);
+    const currentBlock = await provider.getBlockNumber();
+    const fromBlock = Math.max(0, currentBlock - 10000); // Últimos 10000 bloques
+
+    const events = await contract.queryFilter(filter, fromBlock, currentBlock);
+    
+    // Procesar eventos
+    const transfers = events.slice(offset, offset + limit).map(event => ({
+      txHash: event.transactionHash,
+      from: event.args.from,
+      to: event.args.to,
+      amount: event.args.value.toString(),
+      blockNumber: event.blockNumber,
+      blockHash: event.blockHash,
+      logIndex: event.logIndex
+    }));
+
+    // Obtener información adicional de bloques
+    const transfersWithDetails = await Promise.all(transfers.map(async (transfer) => {
+      try {
+        const block = await provider.getBlock(transfer.blockNumber);
+        const decimals = await contract.decimals();
+        return {
+          ...transfer,
+          amountFormatted: ethers.utils.formatUnits(transfer.amount, decimals),
+          timestamp: new Date(block.timestamp * 1000).toISOString()
+        };
+      } catch (error) {
+        return {
+          ...transfer,
+          amountFormatted: 'N/A',
+          timestamp: null
+        };
+      }
+    }));
+
+    res.json({
+      success: true,
+      transfers: transfersWithDetails,
+      total: events.length,
+      limit: limit,
+      offset: offset
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Error al obtener transferencias',
+      message: error.message
+    });
+  }
+});
+
+// GET /api/transfers/stats - Estadísticas de transferencias
+app.get('/api/transfers/stats', async (req, res) => {
+  try {
+    if (!contract || !provider) {
+      return res.status(503).json({
+        success: false,
+        error: 'Contrato o proveedor no configurado'
+      });
+    }
+
+    const filter = contract.filters.Transfer();
+    const currentBlock = await provider.getBlockNumber();
+    const fromBlock = Math.max(0, currentBlock - 10000);
+
+    const events = await contract.queryFilter(filter, fromBlock, currentBlock);
+    const decimals = await contract.decimals();
+
+    // Calcular estadísticas
+    const totalTransfers = events.length;
+    const totalVolume = events.reduce((sum, event) => sum.add(event.args.value), ethers.BigNumber.from(0));
+    const uniqueSenders = new Set(events.map(e => e.args.from.toLowerCase())).size;
+    const uniqueReceivers = new Set(events.map(e => e.args.to.toLowerCase())).size;
+    const averageTransfer = totalTransfers > 0 ? totalVolume.div(totalTransfers) : ethers.BigNumber.from(0);
+
+    // Transferencias últimas 24 horas
+    const oneDayAgo = Math.max(0, currentBlock - 7200); // Aproximadamente 24 horas (5 seg/bloque)
+    const recentEvents = events.filter(e => e.blockNumber >= oneDayAgo);
+    const last24HoursVolume = recentEvents.reduce((sum, event) => sum.add(event.args.value), ethers.BigNumber.from(0));
+
+    res.json({
+      success: true,
+      stats: {
+        totalTransfers: totalTransfers,
+        totalVolume: totalVolume.toString(),
+        totalVolumeFormatted: ethers.utils.formatUnits(totalVolume, decimals),
+        uniqueSenders: uniqueSenders,
+        uniqueReceivers: uniqueReceivers,
+        averageTransfer: averageTransfer.toString(),
+        averageTransferFormatted: ethers.utils.formatUnits(averageTransfer, decimals),
+        last24Hours: {
+          count: recentEvents.length,
+          volume: last24HoursVolume.toString(),
+          volumeFormatted: ethers.utils.formatUnits(last24HoursVolume, decimals)
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Error al obtener estadísticas de transferencias',
+      message: error.message
+    });
+  }
+});
+
+// ==================== ENDPOINTS DE SWAPS ====================
+
+// GET /api/swaps - Obtener historial de swaps (preparado para futuro)
+app.get('/api/swaps', async (req, res) => {
+  try {
+    res.json({
+      success: true,
+      swaps: [],
+      message: 'Sistema de swaps en desarrollo. Este endpoint estará disponible cuando se implemente un DEX.'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// GET /api/swaps/stats - Estadísticas de swaps
+app.get('/api/swaps/stats', async (req, res) => {
+  try {
+    res.json({
+      success: true,
+      stats: {
+        totalSwaps: 0,
+        totalVolume: "0",
+        message: 'Sistema de swaps en desarrollo'
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// ==================== ENDPOINTS DE RED ====================
+
+// GET /api/network - Información de la red blockchain
+app.get('/api/network', async (req, res) => {
+  try {
+    if (!provider) {
+      return res.status(503).json({
+        success: false,
+        error: 'Proveedor no configurado'
+      });
+    }
+
+    const network = await provider.getNetwork();
+    const blockNumber = await provider.getBlockNumber();
+    const gasPrice = await provider.getGasPrice();
+    const block = await provider.getBlock(blockNumber);
+
+    res.json({
+      success: true,
+      network: {
+        chainId: network.chainId,
+        name: network.name || 'Luxae Blockchain',
+        rpcUrl: RPC_URL,
+        blockNumber: blockNumber,
+        gasPrice: gasPrice.toString(),
+        gasPriceFormatted: ethers.utils.formatUnits(gasPrice, 'gwei') + ' gwei',
+        blockTime: block ? new Date(block.timestamp * 1000).toISOString() : null,
+        contractAddress: CONTRACT_ADDRESS || null
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Error al obtener información de la red',
+      message: error.message
+    });
+  }
+});
+
 // Health check
 app.get('/api/health', async (req, res) => {
   try {
@@ -486,13 +926,29 @@ async function startServer() {
   app.listen(PORT, () => {
     console.log(`🚀 Servidor API ejecutándose en http://localhost:${PORT}`);
     console.log(`📋 Endpoints disponibles:`);
-    console.log(`   GET    /api/coupons - Listar todos los cupones`);
-    console.log(`   GET    /api/coupons/:id - Obtener un cupón`);
+    console.log(`\n📦 Contratos:`);
+    console.log(`   GET    /api/contracts - Listar contratos`);
+    console.log(`   GET    /api/contracts/:address - Información de contrato`);
+    console.log(`\n🪙 Tokens:`);
+    console.log(`   GET    /api/tokens - Información del token`);
+    console.log(`   GET    /api/tokens/balance/:address - Balance de dirección`);
+    console.log(`   GET    /api/tokens/holders - Top holders`);
+    console.log(`\n💸 Transferencias:`);
+    console.log(`   GET    /api/transfers - Historial de transferencias`);
+    console.log(`   GET    /api/transfers/stats - Estadísticas de transferencias`);
+    console.log(`\n🔄 Swaps:`);
+    console.log(`   GET    /api/swaps - Historial de swaps`);
+    console.log(`   GET    /api/swaps/stats - Estadísticas de swaps`);
+    console.log(`\n🎫 Cupones:`);
+    console.log(`   GET    /api/coupons - Listar cupones`);
+    console.log(`   GET    /api/coupons/:id - Obtener cupón`);
     console.log(`   POST   /api/coupons - Crear cupones`);
     console.log(`   PUT    /api/coupons/:id - Actualizar cupón`);
     console.log(`   DELETE /api/coupons/:id - Eliminar cupón`);
     console.log(`   POST   /api/coupons/:id/redeem - Canjear cupón`);
-    console.log(`   GET    /api/stats - Estadísticas`);
+    console.log(`   GET    /api/stats - Estadísticas de cupones`);
+    console.log(`\n🌐 Red:`);
+    console.log(`   GET    /api/network - Información de la red`);
     console.log(`   GET    /api/health - Estado del servidor`);
   });
 }
